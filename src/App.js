@@ -4,9 +4,8 @@ import MainAppBar from "./component/MainAppBar";
 import Detail from "./pages/project/Detail";
 import List from "./pages/project/List";
 
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom";
 import ProjectHelper from "./classes/ProjectHelper";
-
 
 export default function App() {   
     const lsValue = localStorage.getItem(ProjectHelper.LsKey) || '[]';
@@ -15,15 +14,17 @@ export default function App() {
 
     return (
         <div className="">
-            <Router>
+            <Router basename='rsb-app'>
                 <MainAppBar/>
                 <Switch>
                     <Route exact path="/">
                         <List projectHelper={projectHelper} />
                     </Route>
-                    <Route path="/project/:projectName/">
+                    <Route exact path="/project/:projectName/">
                         <Detail projectHelper={projectHelper} />
                     </Route>
+
+					<Route render={() => <Redirect to="/" />} />
                 </Switch>
             </Router>
         </div>
