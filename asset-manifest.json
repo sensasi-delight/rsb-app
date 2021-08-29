@@ -1,0 +1,28 @@
+{
+  "files": {
+    "main.js": "/rsb-app/static/js/main.134289e0.chunk.js",
+    "main.js.map": "/rsb-app/static/js/main.134289e0.chunk.js.map",
+    "runtime-main.js": "/rsb-app/static/js/runtime-main.5f454443.js",
+    "runtime-main.js.map": "/rsb-app/static/js/runtime-main.5f454443.js.map",
+    "xlsx.js": "/rsb-app/static/js/xlsx.1476a0ed.chunk.js",
+    "xlsx.js.map": "/rsb-app/static/js/xlsx.1476a0ed.chunk.js.map",
+    "static/js/3.b26f3681.chunk.js": "/rsb-app/static/js/3.b26f3681.chunk.js",
+    "static/js/3.b26f3681.chunk.js.map": "/rsb-app/static/js/3.b26f3681.chunk.js.map",
+    "static/js/4.95c44f4a.chunk.js": "/rsb-app/static/js/4.95c44f4a.chunk.js",
+    "static/js/4.95c44f4a.chunk.js.map": "/rsb-app/static/js/4.95c44f4a.chunk.js.map",
+    "static/js/5.7271226f.chunk.js": "/rsb-app/static/js/5.7271226f.chunk.js",
+    "static/js/5.7271226f.chunk.js.map": "/rsb-app/static/js/5.7271226f.chunk.js.map",
+    "static/js/6.3b6f9988.chunk.js": "/rsb-app/static/js/6.3b6f9988.chunk.js",
+    "static/js/6.3b6f9988.chunk.js.map": "/rsb-app/static/js/6.3b6f9988.chunk.js.map",
+    "static/js/7.dc934552.chunk.js": "/rsb-app/static/js/7.dc934552.chunk.js",
+    "static/js/7.dc934552.chunk.js.map": "/rsb-app/static/js/7.dc934552.chunk.js.map",
+    "index.html": "/rsb-app/index.html",
+    "static/js/3.b26f3681.chunk.js.LICENSE.txt": "/rsb-app/static/js/3.b26f3681.chunk.js.LICENSE.txt",
+    "static/js/6.3b6f9988.chunk.js.LICENSE.txt": "/rsb-app/static/js/6.3b6f9988.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.5f454443.js",
+    "static/js/3.b26f3681.chunk.js",
+    "static/js/main.134289e0.chunk.js"
+  ]
+}
