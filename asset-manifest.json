@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.js": "/rsb-app/static/js/main.1dd9b5e7.chunk.js",
-    "main.js.map": "/rsb-app/static/js/main.1dd9b5e7.chunk.js.map",
+    "main.js": "/rsb-app/static/js/main.5bc35c05.chunk.js",
+    "main.js.map": "/rsb-app/static/js/main.5bc35c05.chunk.js.map",
     "runtime-main.js": "/rsb-app/static/js/runtime-main.2a05ded0.js",
     "runtime-main.js.map": "/rsb-app/static/js/runtime-main.2a05ded0.js.map",
     "xlsx.js": "/rsb-app/static/js/xlsx.9ff032e5.chunk.js",
@@ -23,6 +23,6 @@
   "entrypoints": [
     "static/js/runtime-main.2a05ded0.js",
     "static/js/3.de4ff156.chunk.js",
-    "static/js/main.1dd9b5e7.chunk.js"
+    "static/js/main.5bc35c05.chunk.js"
   ]
 }
