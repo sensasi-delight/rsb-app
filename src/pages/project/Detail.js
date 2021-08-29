@@ -28,6 +28,7 @@ import SurveyListTable from 	'./Detail/SurveyListTable';
 import ResponseListTable from 	'./Detail/ResponseListTable';
 import RsbGraph from 			'./Detail/RsbGraph';
 import NetworkChart from 		'./Detail/NetworkChart';
+import { Tooltip } from '@material-ui/core';
 
 
 
@@ -177,14 +178,14 @@ export default function Detail(props) {
 
 	const RenderCriteriaTable = () => (
 		<>
-			<TitleGrid title='Daftar Kriteria' icon={<AddCircleIcon />} _onClick={() => _handleCriteriaNew()} fullChild="CriteriaTable" />
+			<TitleGrid title='Daftar Kriteria' tooltip="Tambah" icon={<AddCircleIcon />} _onClick={() => _handleCriteriaNew()} fullChild="CriteriaTable" />
 			<CriteriaTable rows={survey.criterias} _handleCriteriaEdit={_handleCriteriaEdit} totalGap={survey.score.gap || 0} />
 		</>
 	)
 
 	const RenderResponseListTable = () => (
 		<>
-			<TitleGrid title='Daftar Responden' icon={<AddCircleIcon />} _onClick={() => _handleResponseNew()} fullChild="ResponseListTable" />
+			<TitleGrid title='Daftar Responden' tooltip="Tambah" icon={<AddCircleIcon />} _onClick={() => _handleResponseNew()} fullChild="ResponseListTable" />
 			<ResponseListTable rows={survey.responses} _handleResponseEdit={_handleResponseEdit} />
 		</>
 	)
@@ -201,6 +202,7 @@ export default function Detail(props) {
 			<TitleGrid
 				title='Daftar Survei'
 				icon={<AddCircleIcon />}
+				tooltip="Tambah"
 				_onClick={() => _handleSurveyNew()}
 				fullChild="SurveyListTable"
 			/>
@@ -267,33 +269,37 @@ export default function Detail(props) {
 
 				<Grid container item xs={4} justifyContent="flex-end">
 					{props.icon &&
-						<IconButton
-							style={{
-								// padding: 0,
-								marginBottom: 7
-							}}
-							color='primary'
-							onClick={props._onClick}
-						>
-							{props.icon}
-						</IconButton>
+						<Tooltip title={props.tooltip}>
+							<IconButton
+								style={{
+									// padding: 0,
+									marginBottom: 7
+								}}
+								color='primary'
+								onClick={props._onClick}
+								>
+								{props.icon}
+							</IconButton>
+						</Tooltip>
 					}
 
 					{props.fullChild &&
-						<IconButton
-							style={{
-								// padding: 0,
-								marginBottom: 7
-							}}
-							color='primary'
-
-							onClick={(e) => {
-								setOpenFull(!openFull)
-								setFullChild(props.fullChild)
-							}}
-						>
-							{openFull ? <FullscreenExitIcon /> : <FullscreenIcon />}
-						</IconButton>
+						<Tooltip title={openFull ? "Tutup Layar Penuh" : "Layar Penuh"}>
+							<IconButton
+								style={{
+									// padding: 0,
+									marginBottom: 7
+								}}
+								color='primary'
+								
+								onClick={(e) => {
+									setOpenFull(!openFull)
+									setFullChild(props.fullChild)
+								}}
+								>
+								{openFull ? <FullscreenExitIcon /> : <FullscreenIcon />}
+							</IconButton>
+						</Tooltip>
 					}
 
 				</Grid>
@@ -364,7 +370,7 @@ export default function Detail(props) {
 						<Grid container item xs={12} md={6}>
 							<Grid item xs={12}  >
 								<Paper className={classes.paper}>
-									<TitleGrid title='Deskripsi' icon={<EditIcon />} _onClick={() => _setIsOpenProjectForm(true)} />
+									<TitleGrid title='Deskripsi' icon={<EditIcon />} tooltip="Ubah" _onClick={() => _setIsOpenProjectForm(true)} />
 									<Typography variant="h6">
 										{project.name}
 									</Typography>

@@ -1,4 +1,5 @@
-import { IconButton } from '@material-ui/core';
+import IconButton from '@material-ui/core/IconButton';
+import Tooltip from '@material-ui/core/Tooltip';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -15,7 +16,7 @@ export default function ResponseListTable(props) {
 					<TableCell>Peran</TableCell>
 					<TableCell>Simbol</TableCell>
 					<TableCell>Pengetahuan</TableCell>
-					<TableCell>Ubah</TableCell>
+					<TableCell></TableCell>
 				</TableRow>
 			</TableHead>
 			<TableBody>
@@ -26,9 +27,11 @@ export default function ResponseListTable(props) {
 						<TableCell>{row.symbol}</TableCell>
 						<TableCell>{row.exp}</TableCell>
 						<TableCell>
-							<IconButton color="primary" onClick={() => props._handleResponseEdit(row)}>
+							<Tooltip title="Ubah">
+							<IconButton color="primary" size="small" onClick={() => props._handleResponseEdit(row)}>
 								<EditIcon  />
 							</IconButton>
+							</Tooltip>
 						</TableCell>
 					</TableRow>
 				))}
