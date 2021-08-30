@@ -69,8 +69,8 @@ export default class Project {
         this.surveys.map(sur =>        
             data.push({
                 date: new Date(sur.date),
-                actual: sur.score.realityTotal.toFixed(2) || 0,
-                targeted: sur.score.expectationTotal.toFixed(2) || 0
+                actual: sur.score && sur.score.realityTotal ? sur.score.realityTotal.toFixed(2) : 0,
+                targeted: sur.score && sur.score.expectationTotal ? sur.score.expectationTotal.toFixed(2) : 0
             })
         )
 

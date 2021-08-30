@@ -42,9 +42,9 @@ export default function SurveyListTable(props) {
 						selected={row.id === props.survey.id}
 					>
 						<TableCell className={classes.tableRow}>{row.date}</TableCell>
-						<TableCell>{row.score ? row.score.gap.toFixed(2) : '-'}</TableCell>
-						<TableCell>{row.criterias.length}</TableCell>
+						<TableCell>{row.score && row.score.gap ? row.score.gap.toFixed(2) : '-'}</TableCell>
 						<TableCell>{row.responses.length}</TableCell>
+						<TableCell>{row.criterias.length}</TableCell>
 
 
 						<TableCell>
