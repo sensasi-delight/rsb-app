@@ -1,34 +1,45 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 
-import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
+import IconButton from '@material-ui/core/IconButton';
+import Tab from '@material-ui/core/Tab';
+import Tabs from '@material-ui/core/Tabs';
+
 
 import AddCircleIcon from '@material-ui/icons/AddCircle';
+import SettingsIcon from '@material-ui/icons/Settings';
 import EditIcon from '@material-ui/icons/Edit';
-import FullscreenIcon from '@material-ui/icons/Fullscreen';
-import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
+import PrintIcon from '@material-ui/icons/Print';
 
-import Survey from 				'../../classes/Survey';
-import SurveyForm from 			'../../component/survey/SurveyForm';
-import FullscreenDialog from 	'../../component/FullscreenDialog';
-import ProjectForm from 		'./List/ProjectForm';
-import CriteriaForm from 		'./Detail/CriteriaForm';
-import ResponseForm from 		'./Detail/ResponseForm';
-import Title from 				'./Detail/Title';
-import CriteriaTable from 		'./Detail/CriteriaTable';
-import SurveyListTable from 	'./Detail/SurveyListTable';
-import ResponseListTable from 	'./Detail/ResponseListTable';
-import RsbGraph from 			'./Detail/RsbGraph';
-import NetworkChart from 		'./Detail/NetworkChart';
-import { Tooltip } from '@material-ui/core';
+//CLASSSES
+import Survey from '../../classes/Survey';
+import Project from '../../classes/Project';
+import { getEmptySurvey, print } from '../../classes/Helper';
+
+import SurveyForm from '../../component/survey/SurveyForm';
+import FullscreenDialog from '../../component/FullscreenDialog';
+import ProjectForm from './List/ProjectForm';
+import CriteriaForm from './Detail/CriteriaForm';
+import ResponseForm from './Detail/ResponseForm';
+import SurveyListTable from './Detail/SurveyListTable';
+import ResponseListTable from './Detail/ResponseListTable';
+// import RsbGraph from './Detail/RsbGraph';
+import NetworkChart from './Detail/NetworkChart';
+import PieChart from './Detail/PieChart';
+import DetailTable from './Detail/DetailTable';
+import CritertiaGraph from './Detail/CriteriaGraph';
+import TitleGrid from '../../component/TitleGrid';
+import CriteriaTable2 from './Detail/CriteriaTable2';
+import TabPanel from './Detail/TabPanel';
+import RsbGraph2 from './Detail/RsbGraph2';
+import { Button, Table, TableBody, TableCell, TableHead, TableRow } from '@material-ui/core';
 
 
 
@@ -81,6 +92,12 @@ const useStyles = makeStyles((theme) => ({
 			duration: theme.transitions.duration.enteringScreen,
 		}),
 	},
+	informationCard: {
+		marginTop: theme.spacing(4),
+		padding: theme.spacing(4),
+		paddingBottom: theme.spacing(3),
+		backgroundColor: "rgb(0 0 255 / 8%)"
+	},
 	drawerPaperClose: {
 		overflowX: 'hidden',
 		transition: theme.transitions.create('width', {
@@ -95,8 +112,8 @@ const useStyles = makeStyles((theme) => ({
 
 	content: {
 		flexGrow: 1,
-		height: '100vh',
-		overflow: 'auto',
+		// height: '100vh',
+		// overflow: 'auto',
 	},
 	container: {
 		paddingTop: theme.spacing(4),
@@ -113,353 +130,621 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-export default function Detail(props) {
-	const classes = useStyles();
 
-	const [_isOpenProjectForm, _setIsOpenProjectForm] = useState(false);
-	const [_isOpenSurveyForm, _setIsOpenSurveyForm] = useState(false);
-	const [_isOpenCriteriaForm, _setIsOpenCriteriaForm] = useState(false);
-	const [_isOpenResponseForm, _setIsOpenResponseForm] = useState(false);
+
+
+let varResponse = undefined
+let varCriteria = undefined
+
+export default function Detail(props) {
+	// window.scrollTo(0, 0);
+
+
+
+	// UI
+	const classes = useStyles();
+	const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
+	const [selectedTab, setSelectedTab] = useState(0);
+	const [uiToggle, setUiToggle] = useState({
+		projectForm: false,
+		surveyForm: false,
+		criteriaForm: false,
+		responseForm: false,
+		surveySetting: false,
+	})
+
+	const toggleUi = (name) => {
+		uiToggle[name] = !uiToggle[name]
+		setUiToggle({ ...uiToggle })
+	}
+
+
+
 
 	const location = useLocation();
 
-	const projectHelper = props.projectHelper;
-	const project = projectHelper.stateToProjectClass(
-		useState(
-			projectHelper.getProjectByName(
-				location.pathname.split('/')[2]
-			)
-		)
-	)
+	const [project, setProjectTemp] = useState(new Project(props.projectHelper.getProjectByName(
+		location.pathname.split('/')[2]
+	) || {}))
+
+	const setProject = project => setProjectTemp(new Project(project))
+
+	const [rsb1chart, setRsb1Chart] = useState(undefined)
+	const [pieChart1, setPieChart1] = useState(undefined)
+	const [pieChart2, setPieChart2] = useState(undefined)
+	const [pieChart3, setPieChart3] = useState(undefined)
+	const [pieChart4, setPieChart4] = useState(undefined)
 
 
+	const [selectedSurvey, setSelectedSurvey] = useState(new Survey({}))
+	const [editedSurvey, setEditedSurvey] = useState(undefined)
+	const [networkChart, setNetworkChart] = useState(undefined)
+	const [criteriaChart, setCriteriaChart] = useState(undefined)
+
+	const detailTableDataRows = useMemo(() => selectedSurvey.getDetailTableData(), [selectedSurvey])
 
 
+	useEffect(() => {
+		setSelectedSurvey(new Survey(selectedSurvey.id ? project.getSurvey(selectedSurvey.id) : {}))
+	}, [project, selectedSurvey.id])
 
-
-	const surveyState = useState(project.surveys[0] || { })
-	const survey = new Survey(surveyState[0], surveyState[1])
-
-	const _handleSurveyNew = () => {
-		survey.clearValue()
-		_setIsOpenSurveyForm(true)
-	}
-
-	const _handleSurveyEdit = (row) => {
-		survey.setThis(row)
-		_setIsOpenSurveyForm(true)
-	}
-
-
-
-	const emptyCriteria = {
-		id: null,
-		symbol: '',
-		desc: ''
-	}
-	const [criteria, setCriteria] = useState(emptyCriteria)
-
-	const _handleCriteriaNew = () => {
-		setCriteria(emptyCriteria)
-		_setIsOpenCriteriaForm(true)
-	}
-
-	const _handleCriteriaEdit = (row) => {
-		setCriteria(row)
-		_setIsOpenCriteriaForm(true)
-	}
-
-
-
-
-
-
-
-
-	const RenderCriteriaTable = () => (
-		<>
-			<TitleGrid title='Daftar Kriteria' tooltip="Tambah" icon={<AddCircleIcon />} _onClick={() => _handleCriteriaNew()} fullChild="CriteriaTable" />
-			<CriteriaTable rows={survey.criterias} _handleCriteriaEdit={_handleCriteriaEdit} totalGap={survey.score.gap || 0} />
-		</>
-	)
-
-	const RenderResponseListTable = () => (
-		<>
-			<TitleGrid title='Daftar Responden' tooltip="Tambah" icon={<AddCircleIcon />} _onClick={() => _handleResponseNew()} fullChild="ResponseListTable" />
-			<ResponseListTable rows={survey.responses} _handleResponseEdit={_handleResponseEdit} />
-		</>
-	)
-
-	const RenderRsbGraph = (props) => (
-		<>
-			<TitleGrid title='Diagram Skor RSB' fullChild="RsbGraph" />
-			<RsbGraph data={project.toRsbGraphData()} chartId={props.chartId} />
-		</>
-	)
-
-	const RenderSurveyListTable = () => (
-		<>
-			<TitleGrid
-				title='Daftar Survei'
-				icon={<AddCircleIcon />}
-				tooltip="Tambah"
-				_onClick={() => _handleSurveyNew()}
-				fullChild="SurveyListTable"
-			/>
-			<SurveyListTable rows={project.surveys} survey={survey} _handleSurveyEdit={_handleSurveyEdit} />
-		</>
-	)
-
-	const RenderNetworkGraph = (props) => (
-		<>
-			<TitleGrid title='Visualisasi'
-			// fullChild="NetworkChart"
-			/>
-			<NetworkChart data={survey.toNetworkGraphData()} chartId={props.chartId}/>
-		</>
-	)
-	
-
-
-
-	const RenderFullscreenChild = () => {
-		let el = '';
-		switch (fullChild) {
-
-			case 'CriteriaTable':
-				el = <RenderCriteriaTable />
-				break;
-
-			case 'ResponseListTable':
-				el = <RenderResponseListTable />
-				break;
-
-			case 'RsbGraph':
-				el = <RenderRsbGraph chartId="rsb2" />
-				break;
-
-			case 'SurveyListTable':
-				el = <RenderSurveyListTable />
-				break;
-
-			// case 'NetworkChart':
-			// 	el = <RenderNetworkGraph chartId="net2" />
-			// 	break;
-
-			default:
-				el = (<></>)
-				break;
+	useEffect(() => {
+		if (rsb1chart) {
+			// rsb1chart.data = project.getRsbGraphData()
+			rsb1chart.data = project.getRsbGraph2Data()
 		}
 
-		return el
+	}, [rsb1chart, project]);
+
+	useEffect(() => {
+		if (pieChart1) {
+			pieChart1.data = selectedSurvey.getPieChartData2('group')
+		}
+
+		if (pieChart2) {
+			pieChart2.data = selectedSurvey.getPieChartData2('edu')
+		}
+
+
+		if (pieChart3) {
+			pieChart3.data = selectedSurvey.getPieChartData2('age')
+		}
+
+		if (pieChart4) {
+			pieChart4.data = selectedSurvey.getPieChartData2('exp')
+		}
+
+	}, [pieChart1, pieChart2, pieChart3, pieChart4, selectedSurvey]);
+
+
+
+	useEffect(() => {
+		if (criteriaChart && !selectedSurvey.isNew()) {
+			criteriaChart.data = selectedSurvey.getCriteriaGraphData()
+		}
+	}, [criteriaChart, selectedSurvey]);
+
+
+	useEffect(() => {
+
+		if (networkChart && !selectedSurvey.isNew()) {
+			networkChart.data = selectedSurvey.toNetworkGraphData()
+		}
+
+	}, [networkChart, selectedSurvey]);
+
+
+
+
+
+	const _handleCriteriaNew = () => {
+		varCriteria = Survey.emptyCriteria
+		toggleUi('criteriaForm')
 	}
 
-
-	const [openFull, setOpenFull] = useState(false)
-	const [fullChild, setFullChild] = useState()
-
-
-	const TitleGrid = (props) => {
-		return (
-			<Grid container>
-				<Grid item xs={8}>
-
-					<Title>{props.title}</Title>
-				</Grid>
-
-				<Grid container item xs={4} justifyContent="flex-end">
-					{props.icon &&
-						<Tooltip title={props.tooltip}>
-							<IconButton
-								style={{
-									// padding: 0,
-									marginBottom: 7
-								}}
-								color='primary'
-								onClick={props._onClick}
-								>
-								{props.icon}
-							</IconButton>
-						</Tooltip>
-					}
-
-					{props.fullChild &&
-						<Tooltip title={openFull ? "Tutup Layar Penuh" : "Layar Penuh"}>
-							<IconButton
-								style={{
-									// padding: 0,
-									marginBottom: 7
-								}}
-								color='primary'
-								
-								onClick={(e) => {
-									setOpenFull(!openFull)
-									setFullChild(props.fullChild)
-								}}
-								>
-								{openFull ? <FullscreenExitIcon /> : <FullscreenIcon />}
-							</IconButton>
-						</Tooltip>
-					}
-
-				</Grid>
-			</Grid>
-		)
-
+	const _handleCriteriaEdit = row => {
+		varCriteria = row
+		toggleUi('criteriaForm')
 	}
-
-
-	let responseVal = []
-	survey.criterias.map(criteria =>
-		responseVal.push({
-			isActive: false,
-			criteriaSymbol: criteria.symbol,
-			criteriaId: criteria.id,
-			criteriaDesc: criteria.desc,
-			expectation: 0,
-			reality: 0
-		})
-	)
-
-	const emptyResponse = {
-		id: null,
-		group: '',
-		role: '',
-		symbol: '',
-		age: '',
-		edu: '',
-		exp: '',
-		response: responseVal
-	}
-
-	const [response, setResponse] = useState(emptyResponse)
 
 	const _handleResponseNew = () => {
-		setResponse(emptyResponse)
-		_setIsOpenResponseForm(true)
+		varResponse = selectedSurvey.getEmptyResponse()
+		toggleUi('responseForm')
 	}
-
-	const _handleResponseEdit = (row) => {
-		setResponse(row)
-		_setIsOpenResponseForm(true)
-	}
-
-	const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
 
 	return (
 		<div className={classes.root}>
-			{/* <Outline items={[
-				"Ringkasan",
-				"Kriteria",
-				"Pemangku Kepentingan",
-				"Visualisasi Jaringan",
-				"TRSB & ARSB",
-				"Hasil",
-			]} /> */}
+
 			<main className={classes.content}>
-				<Toolbar />
-				<Container maxWidth="lg" className={classes.container}>
+				<Container maxWidth="md" className={classes.container}>
 					<Grid container spacing={3}>
 
-						<Grid item xs={12} md={6}>
-							<Paper className={classes.paper} >
-								<RenderRsbGraph chartId="rsb1" />
+						<Grid item xs={12}  >
+							<Paper className={classes.paper} elevation={4}>
+								<TitleGrid title='Deskripsi' icon={<EditIcon />} tooltip="Ubah" _onClick={() => toggleUi('projectForm')} />
+								<Typography variant="h6">
+									{project.name}
+								</Typography>
+
+								<Typography paragraph>
+									{project.desc}
+								</Typography>
 							</Paper>
+
 						</Grid>
 
-						<Grid container item xs={12} md={6}>
-							<Grid item xs={12}  >
-								<Paper className={classes.paper}>
-									<TitleGrid title='Deskripsi' icon={<EditIcon />} tooltip="Ubah" _onClick={() => _setIsOpenProjectForm(true)} />
-									<Typography variant="h6">
-										{project.name}
-									</Typography>
-
-									<Typography paragraph>
-										{project.desc}
-									</Typography>
+						{project.surveys.length !== 0 &&
+							<Grid item xs={12} md={12}>
+								<Paper className={classes.paper} elevation={4}>
+									{/* <TitleGrid title='Kinerja Keseluruhan' /> */}
+									<TitleGrid title='Skor Keseluruhan' />
+									{/* <RsbGraph chartId="rsb1" onInitialize={setRsb1Chart} /> */}
+									<RsbGraph2 chartId="rsb1" onInitialize={setRsb1Chart} />
 								</Paper>
+							</Grid>}
 
-							</Grid>
 
-							<Grid item xs={12} style={{ marginTop: '24px' }}>
-								<Paper className={fixedHeightPaper}>
-									<RenderSurveyListTable />
-								</Paper>
+						{/* DAFTAR SURVEY */}
+						<Grid item xs={12}>
+							<Paper className={fixedHeightPaper} elevation={4}>
+								<TitleGrid
+									title='Daftar Survei'
+									icon={<AddCircleIcon />}
+									tooltip="Tambah Survei"
+									_onClick={() => {
+										setEditedSurvey(getEmptySurvey())
+										toggleUi('surveyForm')
+									}}
+								/>
 
-							</Grid>
+								{project.surveys.length === 0 ?
+									<Paper className={classes.informationCard} elevation={4}>
+
+										<Typography variant="body1">Belum ada data survei untuk projek ini, silahkan tambahkan data survei terlebih dahulu</Typography>
+										<Typography variant="body2">
+											klik <IconButton
+												style={{ marginBottom: 7 }}
+												color='primary'
+												onClick={() => {
+													setEditedSurvey(getEmptySurvey())
+													toggleUi('surveyForm')
+												}}
+											>
+												<AddCircleIcon />
+											</IconButton>
+											untuk menambah data</Typography>
+
+									</Paper>
+									: <SurveyListTable rows={project.surveys} idSelected={selectedSurvey.id}
+										setSelected={(row) => setSelectedSurvey(new Survey(row))}
+
+										openSettingForm={() => {
+											setSelectedTab(0)
+											toggleUi('surveySetting')
+										}}
+
+										_handleSurveyEdit={(row) => {
+											setEditedSurvey(row)
+											toggleUi('surveyForm')
+										}}
+									/>
+								}
+							</Paper>
+
 						</Grid>
 
-						{!survey.isNew() &&
-							<>
-								<Grid item md={6} xs={12}>
-									<Paper className={fixedHeightPaper}>
-										<RenderCriteriaTable />
-									</Paper>
-								</Grid>
-								<Grid item md={6} xs={12}>
-									<Paper className={fixedHeightPaper}>
-										<RenderResponseListTable />
-									</Paper>
-								</Grid>
-								<Grid item md={12} xs={12}>
-									<Paper className={classes.paper}>
-										<RenderNetworkGraph chartId="net1" />
-									</Paper>
-								</Grid>
-							</>
+						{selectedSurvey.id &&
+							<Grid item md={12} xs={12}>
+								<Paper className={classes.paper} elevation={4}>
+									<TitleGrid
+										title={'Hasil Survei ' + selectedSurvey.date}
+									/>
+
+									{selectedSurvey.criterias.length === 0 || selectedSurvey.responses.length === 0 ?
+										<Paper className={classes.informationCard} elevation={4}>
+											<Typography variant="body1">Belum ada data kriteria atau responden pada survei ini, silahkan melakukan pengaturan survei terlebih dahulu.</Typography>
+											<Typography variant="body2">
+												klik <IconButton
+													style={{ marginBottom: 7 }}
+													color='primary'
+													onClick={() => {
+														setSelectedTab(0)
+														toggleUi('surveySetting')
+													}}
+												>
+													<SettingsIcon />
+												</IconButton>
+												untuk melakuan pengaturan kriteria atau responden</Typography>
+										</Paper>
+										:
+										<>
+											<Tabs
+												centered
+												value={selectedTab}
+												indicatorColor="primary"
+												textColor="primary"
+												onChange={(event, newValue) => {
+													setSelectedTab(newValue)
+												}}
+												style={{ marginTop: '2em' }}
+											>
+												{/* <Tab label="Fuzzy" /> */}
+												<Tab label="Ringkasan" />
+												<Tab label="Demografi Responden" />
+												<Tab label="Skor Kriteria" />
+												<Tab label="Relasi Kriteria-Responden" />
+												<Tab label="Rincian" />
+											</Tabs>
+
+											{/* RINGKASAN */}
+											<TabPanel value={selectedTab} index={0} style={{ padding: "2em", paddingTop: '4em' }}>
+
+												<Grid container spacing={3}>
+
+													<Grid item xs={8}>
+														<Paper className={classes.paper} elevation={4} style={{ padding: "1em" }}>
+															<Typography variant="h5" align="left" style={{ paddingBottom: "1em" }} component="p">
+																<strong>Rekomendasi Prioritas</strong>
+															</Typography>
+															<Table size="small">
+																<TableHead>
+																	<TableRow>
+																		<TableCell>#</TableCell>
+																		<TableCell>Simbol</TableCell>
+																		<TableCell>Kriteria</TableCell>
+																		<TableCell>Skor</TableCell>
+																	</TableRow>
+
+																</TableHead>
+																<TableBody>
+																	{detailTableDataRows.slice(0, 10).map(row =>
+																		<TableRow key={row.id}>
+																			<TableCell>{row.rank}</TableCell>
+																			<TableCell>{row.symbol}</TableCell>
+																			<TableCell>{row.desc}</TableCell>
+																			<TableCell style={{ color: row.rate < 5 ? 'red' : 'green' }}>{row.rate.toFixed(2)}</TableCell>
+																		</TableRow>
+																	)}
+																	{detailTableDataRows.length > 10 &&
+																		<TableRow>
+																			<TableCell>...</TableCell>
+																			<TableCell>...</TableCell>
+																			<TableCell>...</TableCell>
+																			<TableCell>...</TableCell>
+																		</TableRow>
+																	}
+																</TableBody>
+
+															</Table>
+
+
+
+														</Paper>
+
+														<Button style={{ marginTop: '4em' }} variant="outlined" onClick={() => setSelectedTab(4)} color="primary">
+															Liat Rincian...
+														</Button>
+													</Grid>
+
+
+
+													<Grid item xs={4}>
+														<Grid container spacing={3}>
+															<Grid item xs={12}>
+																<Paper className={classes.paper} elevation={4} style={{ padding: "1em 0em" }}>
+																	<Grid container alignItems="center">
+																		<Grid item xs={8} style={{ paddingLeft: "1em" }}>
+																			<Typography>Jumlah Kriteria</Typography>
+																		</Grid>
+																		<Grid item xs={4}>
+																			<Typography align="center" variant="h3" component="p">{selectedSurvey.criterias.length}</Typography>
+																		</Grid>
+																	</Grid>
+																</Paper>
+															</Grid>
+
+															<Grid item xs={12}>
+																<Paper className={classes.paper} elevation={4} style={{ padding: "1em 0em" }}>
+																	<Grid container alignItems="center">
+																		<Grid item xs={8} style={{ paddingLeft: "1em" }}>
+																			<Typography>Jumlah Responden</Typography>
+																		</Grid>
+																		<Grid item xs={4}>
+																			<Typography align="center" variant="h3" component="p">{selectedSurvey.responses.length}</Typography>
+																		</Grid>
+																	</Grid>
+																</Paper>
+															</Grid>
+
+															<Grid item xs={12}>
+																<Paper className={classes.paper} elevation={4} style={{ padding: "1em" }}>
+
+																	<Typography variant="h5" align="left" gutterBottom component="p">Skor Keseluruhan: </Typography>
+
+																	<Grid container alignItems="flex-end">
+																		<Grid item xs={6}>
+																			<Typography align="center" variant="h2" component="p" style={{ color: selectedSurvey.score.gap > 0 ? 'red' : 'green' }}>
+																				{(5 - selectedSurvey.score.gap).toFixed(2)}
+																			</Typography>
+																		</Grid>
+																		<Grid item xs={6}>
+																			<Typography align="left" variant="h5" gutterBottom component="p">/ 5</Typography>
+																		</Grid>
+																	</Grid>
+
+
+																</Paper>
+															</Grid>
+
+
+															<Grid item>
+																<Paper className={classes.paper} elevation={4} style={{ padding: "1em 0em" }}>
+																	<Grid container alignItems="center">
+																		<Grid item xs={4}>
+																			<Typography align="center" variant="h3" component="p">
+																				{detailTableDataRows.filter(row => row.rate < 5).length}
+																			</Typography>
+																		</Grid>
+																		<Grid item xs={8} style={{ paddingRight: "1em" }}>
+																			<Typography>kriteria <strong style={{ color: "red" }}>belum mencapai</strong> ekspektasi responden</Typography>
+																		</Grid>
+																	</Grid>
+																</Paper>
+															</Grid>
+
+
+															<Grid item>
+																<Paper className={classes.paper} elevation={4} style={{ padding: "1em 0em" }}>
+																	<Grid container alignItems="center">
+																		<Grid item xs={4}>
+																			<Typography align="center" variant="h3" component="p">
+																				{detailTableDataRows.filter(row => row.rate === 5).length}
+
+																			</Typography>
+																		</Grid>
+																		<Grid item xs={8} style={{ paddingRight: "1em" }}>
+																			<Typography>kriteria <strong>sesuai dengan</strong> ekspektasi responden</Typography>
+																		</Grid>
+																	</Grid>
+																</Paper>
+															</Grid>
+
+
+															<Grid item>
+																<Paper className={classes.paper} elevation={4} style={{ padding: "1em 0em" }}>
+																	<Grid container alignItems="center" >
+																		<Grid item xs={4}>
+																			<Typography align="center" variant="h3" component="p">
+																				{detailTableDataRows.filter(row => row.rate > 5).length}
+
+																			</Typography>
+																		</Grid>
+																		<Grid item xs={8} style={{ paddingRight: "1em" }}>
+																			<Typography>kriteria <strong style={{ color: "green" }}>melebihi</strong> ekspektasi responden</Typography>
+																		</Grid>
+																	</Grid>
+																</Paper>
+															</Grid>
+														</Grid>
+													</Grid>
+												</Grid>
+											</TabPanel>
+
+											<TabPanel value={selectedTab} index={1}>
+												<Grid container>
+													<Grid item md={6}>
+														<PieChart chartId="Kelompok" onInitialize={setPieChart1}></PieChart>
+													</Grid>
+
+													<Grid item md={6}>
+														<PieChart chartId="Pendidikan" onInitialize={setPieChart2}></PieChart>
+
+													</Grid>
+
+													<Grid item md={6}>
+														<PieChart chartId="Usia" onInitialize={setPieChart3}></PieChart>
+
+													</Grid>
+
+													<Grid item md={6}>
+														<PieChart chartId="Pengalaman" onInitialize={setPieChart4}></PieChart>
+
+													</Grid>
+
+												</Grid>
+												{/* <CritertiaGraph chartId="crChart" onInitialize={setCriteriaChart} /> */}
+											</TabPanel>
+
+											<TabPanel value={selectedTab} index={2}>
+												<CritertiaGraph chartId="crChart" onInitialize={setCriteriaChart} />
+											</TabPanel>
+
+
+											<TabPanel value={selectedTab} index={3}>
+												<NetworkChart chartId="net1" onInitialize={setNetworkChart} />
+											</TabPanel>
+
+											<TabPanel value={selectedTab} index={4} style={{ paddingTop: "3em" }}>
+												<Button
+													style={{ marginBottom: "2em" }}
+													variant="contained"
+													color="primary"
+													size="small"
+													startIcon={<PrintIcon />}
+													onClick={() => print('detailTableElId', 'ifPrint')}
+												>
+													Cetak
+												</Button>
+												<DetailTable id="detailTableElId" rows={detailTableDataRows}></DetailTable>
+											</TabPanel>
+										</>
+									}
+								</Paper>
+							</Grid>
+
 						}
-
 
 
 					</Grid>
 				</Container>
+
 			</main>
+
+			<iframe title="ifPrint" id="ifPrint" style={{ height: '0px', width: '0px', position: 'absolute' }} />
+
+
+			<ProjectForm
+				projectHelper={props.projectHelper}
+				project={project}
+				_setProject={setProject}
+				_isOpenForm={uiToggle.projectForm}
+				closeForm={() => toggleUi('projectForm')}
+			/>
 
 
 			<SurveyForm
 				projectHelper={props.projectHelper}
 				project={project}
-				survey={survey}
-				_isOpenForm={_isOpenSurveyForm}
-				_setIsOpenForm={_setIsOpenSurveyForm}
+				survey={editedSurvey}
+				setProject={setProject}
+				_isOpenForm={uiToggle.surveyForm}
+				closeForm={() => {
+					toggleUi('surveyForm')
+				}}
 			/>
 
-			<CriteriaForm
-				projectHelper={props.projectHelper}
-				project={project}
-				survey={survey}
-				criteria={criteria}
-				setCriteria={setCriteria}
-				_isOpenForm={_isOpenCriteriaForm}
-				_setIsOpenForm={_setIsOpenCriteriaForm}
-			/>
 
-			<ResponseForm
-				projectHelper={props.projectHelper}
-				project={project}
-				survey={survey}
-				response={response}
-				setResponse={setResponse}
-				_isOpenForm={_isOpenResponseForm}
-				_setIsOpenForm={_setIsOpenResponseForm}
-			/>
 
-			<ProjectForm
-				projectHelper={props.projectHelper}
-				project={project}
-				_isOpenForm={_isOpenProjectForm}
-				_setIsOpenForm={_setIsOpenProjectForm}
-			/>
-
-			<FullscreenDialog isOpen={openFull} child={
+			{selectedSurvey.id &&
 				<>
-					<Toolbar />
-					<RenderFullscreenChild />
-					<Toolbar />
-					<Toolbar />
+					<FullscreenDialog isOpen={uiToggle.surveySetting}>
+						<Container maxWidth="md" className={classes.container}>
+							<TitleGrid title={'Pengaturan Survey: ' + selectedSurvey.date}
+
+								fullS={true}
+								isFullS={uiToggle.surveySetting}
+								_onClickFullS={() => toggleUi('surveySetting')}
+							/>
+
+							<Tabs
+								centered
+								value={selectedTab}
+								indicatorColor="primary"
+								textColor="primary"
+								onChange={(event, newValue) => {
+									setSelectedTab(newValue);
+								}}
+
+							>
+
+								<Tab label="Kriteria" />
+								<Tab label="Responden" />
+							</Tabs>
+
+							<TabPanel value={selectedTab} index={0}>
+								<TitleGrid title='Daftar Kriteria' tooltip="Tambah Kriteria" icon={<AddCircleIcon />} _onClick={_handleCriteriaNew} />
+
+								{/* {
+									selectedSurvey.criterias.length !== 0 &&
+									<Button
+										style={{ marginBottom: "2em" }}
+										variant="contained"
+										color="primary"
+										size="small"
+										startIcon={<PrintIcon />}
+										onClick={() => print('responseForm', 'ifPrint')}
+									>
+										Cetak
+									</Button>
+								} */}
+
+								{
+									selectedSurvey.criterias.length === 0 ?
+
+										<Paper className={classes.informationCard} elevation={4}>
+											<Typography variant="body1">Belum ada kriteria untuk survei ini, silahkan tambahkan kriteria terlebih dahulu</Typography>
+											<Typography variant="body2">
+												klik <IconButton
+													style={{ marginBottom: 7 }}
+													color='primary'
+													onClick={_handleCriteriaNew}
+												>
+													<AddCircleIcon />
+												</IconButton>
+												untuk menambah kriteria</Typography>
+										</Paper>
+										:
+
+										<CriteriaTable2 id="criteriaTable" rows={selectedSurvey.criterias} _handleCriteriaEdit={_handleCriteriaEdit} />
+
+								}
+							</TabPanel>
+
+
+							<TabPanel value={selectedTab} index={1}>
+								<TitleGrid title='Daftar Responden' tooltip="Tambah Responden" icon={<AddCircleIcon />} _onClick={_handleResponseNew} />
+
+								{
+									selectedSurvey.responses.length === 0 ?
+
+										<Paper className={classes.informationCard} elevation={4}>
+											<Typography variant="body1">Belum ada responden untuk survei ini, silahkan tambahkan responden terlebih dahulu</Typography>
+											<Typography variant="body2">
+												klik <IconButton
+													style={{ marginBottom: 7 }}
+													color='primary'
+													onClick={_handleResponseNew}
+												>
+													<AddCircleIcon />
+												</IconButton>
+												untuk menambah responden</Typography>
+										</Paper>
+										:
+										<ResponseListTable rows={selectedSurvey.responses} _handleResponseEdit={row => {
+											varResponse = row
+											toggleUi('responseForm')
+										}} />
+								}
+
+							</TabPanel>
+						</Container>
+					</FullscreenDialog>
+
+
+					{varCriteria &&
+						<CriteriaForm
+							projectHelper={props.projectHelper}
+							project={project}
+							survey={selectedSurvey}
+							criteria={varCriteria}
+							setProject={setProject}
+							_isOpenForm={uiToggle.criteriaForm}
+							closeForm={() => {
+								varCriteria = undefined
+								toggleUi('criteriaForm')
+							}}
+						/>
+					}
+
+					{varResponse &&
+						<ResponseForm
+							id="responseForm"
+							projectHelper={props.projectHelper}
+							project={project}
+							survey={selectedSurvey}
+							response={varResponse}
+							setProject={setProject}
+							_isOpenForm={uiToggle.responseForm}
+							closeForm={() => {
+								varResponse = undefined
+								toggleUi('responseForm')
+							}}
+						/>
+					}
 				</>
-			} />
+			}
+
+
 		</div>
 	);
 }

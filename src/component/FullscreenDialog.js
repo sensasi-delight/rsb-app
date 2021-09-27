@@ -1,22 +1,26 @@
-import React from 'react';
+import PropTypes from 'prop-types';
+
 import Dialog from '@material-ui/core/Dialog';
-import Slide from '@material-ui/core/Slide';
-import { Container } from '@material-ui/core';
+import Container from '@material-ui/core/Container';
 
 
-const Transition = React.forwardRef(function Transition(props, ref) {
-  return <Slide direction="up" ref={ref} {...props} />;
-});
+const FullscreenDialog = props => {
 
-export default function FullscreenDialog(props) {
-
-  return (
-    <div>      
-      <Dialog fullScreen open={props.isOpen} TransitionComponent={Transition}>
-        <Container maxWidth="lg">
-            { props.child }
-            </Container>
-      </Dialog>
-    </div>
-  );
+	return (
+		<Dialog
+			// keepMounted
+			fullScreen
+			open={props.isOpen}
+		>
+			<Container maxWidth="lg">
+				{props.children}
+			</Container>
+		</Dialog>
+	);
 }
+
+FullscreenDialog.propTypes = {
+	children: PropTypes.node,
+};
+
+export default FullscreenDialog

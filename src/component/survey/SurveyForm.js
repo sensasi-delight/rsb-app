@@ -1,14 +1,31 @@
-import TextField from "@material-ui/core/TextField";
 import { useEffect, useState } from "react";
+
+import TextField from "@material-ui/core/TextField";
 import FormDialog from "../FormDialog";
 
+import PropTypes from 'prop-types';
+import { getEmptySurvey } from '../../classes/Helper';
+
+
+SurveyForm.propTypes = {
+	closeForm: PropTypes.func.isRequired
+};
 
 export default function SurveyForm(props) {
 
-	const { projectHelper, project, survey } = props
-	const oldValues = project.getSurvey(survey.id)
+	const { projectHelper, project } = props
 
-	const { _isOpenForm, _setIsOpenForm } = props
+	const [oldValues, setOldValues] = useState({...props.survey})
+	const [survey, setSurvey] = useState({...props.survey})
+
+	useEffect(() => {
+		if (props.survey) {
+			setOldValues({...props.survey})
+			setSurvey({...props.survey})
+		}
+	}, [props.survey])
+
+	const { _isOpenForm, closeForm } = props
 
 
 	const [_isSubmitDisabled, _setisSubmitDisabled] = useState(true);
@@ -28,10 +45,10 @@ export default function SurveyForm(props) {
 		const isDirty = survey.date !== '';
 		const isChanged = survey.date !== oldValues.date
 
-		if ((isDirty) || (isChanged)) {
+		if (isDirty || isChanged) {
 			_setIsOpenCancelDialog(true)
 		} else {
-			_setIsOpenForm(false)
+			closeForm()
 		}
 	}
 
@@ -39,37 +56,39 @@ export default function SurveyForm(props) {
 		_setIsOpenCancelDialog(false)
 
 		if (isCanceled) {
-			_setIsOpenForm(false)
+			closeForm()
 
-			if (survey.isNew()) {
-				survey.clearValue()
+			if (survey.id) {
+				setSurvey({...oldValues})
 			} else {
-				survey.setThis(oldValues)
+				setSurvey(getEmptySurvey())
 			}
 		}
 	}
 
 	const _handleSubmit = () => {
 
-		if(survey.isNew()) {
+		if(!survey.id) {
 			survey.id = new Date()
 			project.surveys.unshift(survey)
 		} else {
 			const i = project.surveys.findIndex(s => s.id === survey.id)
-			project.surveys[i] = survey
+			project.surveys[i] = {...survey}
 		}
 
 		project.surveys.sort((a, b) => (a.date < b.date) ? 1 : -1)
 		projectHelper.unshift(project)
 		projectHelper.allToLs()
 
-		_setIsOpenForm(false)
+		props.setProject(project)
+
+		closeForm()
 	}
 
 
 	return (
 		<FormDialog
-			// _title={project.isNew() ? 'Tambah Survei' : 'Ubah ' + oldValues.name}
+			_title={!survey.id ? 'Tambah Survei' : 'Ubah ' + oldValues.date}
 			_itemName='survei'
 			_dataName='survei'
 			_isOpenForm={_isOpenForm}
@@ -86,7 +105,9 @@ export default function SurveyForm(props) {
 				label="Tanggal"
 				type="date"
 				value={survey.date}
-				onChange={(e) => survey.setDate(e.target.value)}
+				onChange={(e) => {
+					setSurvey({...survey, date: e.target.value})
+				}}
 
 				fullWidth
 				required

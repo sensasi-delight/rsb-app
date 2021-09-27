@@ -1,21 +1,18 @@
-import TextField from "@material-ui/core/TextField";
 import { useEffect, useState } from "react";
+
+import TextField from "@material-ui/core/TextField";
+
 import FormDialog from "../../../component/FormDialog";
+
 
 
 export default function CriteriaForm(props) {
 
-    const { projectHelper, project, survey, criteria, setCriteria } = props
+    const { projectHelper, project, survey, criteria } = props
 
     const [criteriaTemp, setCriteriaTemp] = useState({...criteria})
 
-    const clear = {
-        id: null,
-        symbol: '',
-        desc: ''
-    }
-
-	const { _isOpenForm, _setIsOpenForm } = props;
+	const { _isOpenForm, closeForm } = props;
 
 	const [_isSubmitDisabled, _setisSubmitDisabled] = useState(true);
 	const [_isOpenCancelDialog, _setIsOpenCancelDialog] = useState(false)
@@ -23,9 +20,9 @@ export default function CriteriaForm(props) {
     let isDirty = criteriaTemp.id === null && (criteriaTemp.desc !== '' || criteriaTemp.symbol !== '')
     let isChanged = criteriaTemp.id !== null && (criteriaTemp.desc !== criteria.desc || criteriaTemp.symbol !== criteria.symbol)
 
-    useEffect(() => {
-        setCriteriaTemp({...criteria})
-    }, [criteria])
+    // useEffect(() => {
+    //     setCriteriaTemp({...criteria})
+    // }, [criteria])
 
 
 	useEffect(() => {
@@ -43,7 +40,7 @@ export default function CriteriaForm(props) {
 		if (isDirty || isChanged) {
 			_setIsOpenCancelDialog(true)
 		} else {
-			_setIsOpenForm(false)
+			closeForm()
 		}
 	}
 
@@ -51,7 +48,7 @@ export default function CriteriaForm(props) {
 		_setIsOpenCancelDialog(false)
 
 		if (isCanceled) {
-			_setIsOpenForm(false)
+			closeForm()
             setCriteriaTemp({...criteria})
 		}
 	}
@@ -62,24 +59,26 @@ export default function CriteriaForm(props) {
             criteriaTemp.id = new Date()
             survey.criterias.push(criteriaTemp)
         } else {
-            const criteriaIndex = survey.getCriteriaIndex(criteriaTemp.id)
-            survey.criterias[criteriaIndex] = criteriaTemp
+			const crIndex = survey.getCriteriaIndexById(criteriaTemp.id)
+
+			if(crIndex !== -1) {
+				survey.criterias[crIndex] = criteriaTemp
+			}
         }
 
-        survey.criterias.sort((a, b) => (a.symbol < b.symbol ? -1 : (a.symbol.length - b.symbol.length) ))
+		survey.criteriasSort()
 
         const surveyIndex = project.getSurveyIndex(survey.id)
 
         if (surveyIndex !== -1) {
             project.surveys[surveyIndex] = survey
 
-            project.setThis(project)
+            props.setProject(project)
 
             projectHelper.unshift(project)
             projectHelper.allToLs()
 
-            setCriteria(clear)
-            _setIsOpenForm(false)
+			closeForm()
         }
 
 		

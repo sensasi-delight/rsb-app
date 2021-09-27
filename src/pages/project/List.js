@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 
-import Button           from "@material-ui/core/Button";
-import Container        from "@material-ui/core/Container";
-import Grid             from "@material-ui/core/Grid";
-import TextField        from "@material-ui/core/TextField";
-import InputAdornment   from "@material-ui/core/InputAdornment";
-import Toolbar          from "@material-ui/core/Toolbar";
+import Button from "@material-ui/core/Button";
+import Container from "@material-ui/core/Container";
+import Grid from "@material-ui/core/Grid";
+import TextField from "@material-ui/core/TextField";
+import InputAdornment from "@material-ui/core/InputAdornment";
 
 import { makeStyles } from "@material-ui/core/styles";
 
@@ -51,7 +50,8 @@ const useStyles = makeStyles((theme) => ({
 
 
 export default function List(props) {
-    const { projectHelper } = props;
+	// window.scrollTo(0, 0);
+	const { projectHelper } = props;
 
 	const classes = useStyles();
 
@@ -61,73 +61,70 @@ export default function List(props) {
 
 	const [_filteredProjects, _setFilteredProjects] = useState(projectHelper.all)
 
-    // bug note : double useffect di ProjectFrom
-    useEffect(() => {
-        _setFilteredProjects(projectHelper.all.filter(project => project.name.includes(_query) || project.desc.includes(_query)))
-    }, [_query, projectHelper.all])
+	// bug note : double useffect di ProjectFrom
+	useEffect(() => {
+		_setFilteredProjects(projectHelper.all.filter(project => project.name.toLowerCase().includes(_query) || project.desc.toLowerCase().includes(_query)))
+	}, [_query, projectHelper.all])
 
 	return (
-		<>
-			<Toolbar />
-			<main>
-				<div className={classes.heroContent}>
-					<Container maxWidth="sm">
-						<TextField
-							autoComplete="off"
-							margin="dense"
-							id="search"
-							label="Cari"
+		<main>
+			<div className={classes.heroContent}>
+				<Container maxWidth="sm">
+					<TextField
+						autoComplete="off"
+						margin="dense"
+						id="search"
+						label="Cari"
+						fullWidth
+						variant="outlined"
+						value={_query}
+						onChange={(e) => _setQuery(e.target.value)}
+						InputProps={{
+							endAdornment: (
+								<InputAdornment position="end">
+									<SearchIcon />
+								</InputAdornment>
+							),
+						}}
+					/>
+				</Container>
+			</div>
+
+			<Container className={classes.cardGrid} maxWidth="md">
+				<Grid container spacing={4}>
+					<Grid item xs={12} sm={6} md={4}>
+						<Button
+							onClick={() => _setIsOpenForm(true)}
+							style={{ height: "100%" }}
 							fullWidth
 							variant="outlined"
-                            value={_query}
-                            onChange={(e) => _setQuery(e.target.value)}
-							InputProps={{
-								endAdornment: (
-									<InputAdornment position="end">
-										<SearchIcon />
-									</InputAdornment>
-								),
-							}}
-						/>
-					</Container>
-				</div>
-
-				<Container className={classes.cardGrid} maxWidth="md">
-					<Grid container spacing={4}>
-						<Grid item xs={12} sm={6} md={4}>
-							<Button
-								onClick={() => _setIsOpenForm(true)}
-								style={{ height: "100%" }}
-								fullWidth
-								variant="outlined"
-								color="primary"
-								size="large"
-								startIcon={<AddOutlinedIcon />}
-							>
-								Tambah Proyek
-							</Button>
-						</Grid>
-
-						{_filteredProjects.map((project) => (
-							<Grid item key={project.name} xs={12} sm={6} md={4}>
-								<ProjectCard
-									title={project.name}
-									desc={project.desc}
-									to={"/project/" + project.name}
-								/>
-							</Grid>
-						))}
+							color="primary"
+							size="large"
+							startIcon={<AddOutlinedIcon />}
+						>
+							Tambah Proyek
+						</Button>
 					</Grid>
-				</Container>
-				
-				
-				<ProjectForm
-                    projectHelper={props.projectHelper}
-                    project={projectHelper.stateToProjectClass(useState({}))}
-                    _isOpenForm={_isOpenForm}
-                    _setIsOpenForm={_setIsOpenForm}
-                />
-			</main>
-		</>
-	);
+
+					{_filteredProjects.map((project) => (
+						<Grid item key={project.name} xs={12} sm={6} md={4}>
+							<ProjectCard
+								title={project.name}
+								desc={project.desc}
+								to={"/project/" + project.name}
+							/>
+						</Grid>
+					))}
+				</Grid>
+			</Container>
+
+
+			<ProjectForm
+				projectHelper={props.projectHelper}
+				project={projectHelper.stateToProjectClass(useState({}))}
+				_isOpenForm={_isOpenForm}
+				closeForm={() => { _setIsOpenForm(false) }}
+			/>
+		</main>
+	)
 }

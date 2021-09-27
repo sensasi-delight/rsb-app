@@ -1,43 +1,33 @@
-import { Checkbox, InputLabel, MenuItem, Select, Table, TableBody, TableCell, TableHead, TableRow } from "@material-ui/core";
-import TextField from "@material-ui/core/TextField";
 import { useEffect, useState } from "react";
-import FormDialog from "../../../component/FormDialog";
 
+import Checkbox from '@material-ui/core/Checkbox';
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import TextField from "@material-ui/core/TextField";
+import Select from '@material-ui/core/Select';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 
-export default function ResponseForm(props) {
+import FormDialog from "../../../component/FormDialog";
+import { Container, InputAdornment, Typography } from "@material-ui/core";
 
-	const { projectHelper, project, survey, response, setResponse } = props
+
+
+
+const ResponseForm = props => {
+
+	const { projectHelper, project, survey, response } = props
 
 	const [responseTemp, setResponseTemp] = useState({ ...response })
 
-	let responseVal = []
-	survey.criterias.map(criteria =>
-		responseVal.push({
-			isActive: false,
-			criteriaSymbol: criteria.symbol,
-			criteriaDesc: criteria.desc,
-			criteriaId: criteria.id,
-			expectation: 0,
-			reality: 0
-		})
-	)
-
-	const clear = {
-		id: null,
-		group: '',
-		role: '',
-		symbol: '',
-		age: '',
-		edu: '',
-		exp: '',
-		response: responseVal
-	}
-
-	const { _isOpenForm, _setIsOpenForm } = props;
+	const { _isOpenForm, closeForm } = props;
 
 	const [_isSubmitDisabled, _setisSubmitDisabled] = useState(true);
 	const [_isOpenCancelDialog, _setIsOpenCancelDialog] = useState(false)
@@ -46,10 +36,38 @@ export default function ResponseForm(props) {
 	let isChanged = responseTemp.id !== null && (responseTemp.role !== response.desc || responseTemp.symbol !== response.symbol)
 	let isFulfill = responseTemp.role !== '' && responseTemp.symbol !== '' && responseTemp.group !== '' && responseTemp.age !== ''
 
+
+
+	// SYNC CRITERIAS
+	//
+	//
+	//
 	useEffect(() => {
 
-		setResponseTemp({ ...response })
-	}, [response])
+		const criteriaIds = survey.criterias.map(criteria => criteria.id)
+		const responseCriteriaIds = response.response.map(resCr => resCr.criteriaId)
+
+		if (criteriaIds.join(',') !== responseCriteriaIds.join(',')) {
+			const temp = { ...response }
+			temp.response = criteriaIds.map((id, i) => {
+				const found = response.response.find(resCr => resCr.criteriaId === id)
+
+				if (found) {
+					return found
+				} else {
+					return {
+						isActive: false,
+						criteriaId: id,
+						expectation: 0,
+						reality: 0
+					}
+				}
+			})
+
+			setResponseTemp(temp)
+		}
+	}, [survey, response])
+	// EOL
 
 
 	useEffect(() => {
@@ -67,7 +85,7 @@ export default function ResponseForm(props) {
 		if (isDirty || isChanged) {
 			_setIsOpenCancelDialog(true)
 		} else {
-			_setIsOpenForm(false)
+			closeForm()
 		}
 	}
 
@@ -75,7 +93,7 @@ export default function ResponseForm(props) {
 		_setIsOpenCancelDialog(false)
 
 		if (isCanceled) {
-			_setIsOpenForm(false)
+			closeForm()
 			setResponseTemp({ ...response })
 		}
 	}
@@ -86,11 +104,15 @@ export default function ResponseForm(props) {
 			responseTemp.id = new Date()
 			survey.responses.push(responseTemp)
 		} else {
-			const index = survey.getResponseIndex(responseTemp.id)
-			survey.responses[index] = responseTemp
+			const resIndex = survey.getResponseIndexById(responseTemp.id)
+
+			if (resIndex !== -1) {
+				survey.responses[resIndex] = responseTemp
+			}
 		}
 
-		survey.responses.sort((a, b) => (parseInt(a.symbol.substring(1)) < parseInt(b.symbol.substring(1)) ? -1 : 1))
+		survey.responsesSort()
+
 		survey.calcAndSetRSB()
 
 		const surveyIndex = project.getSurveyIndex(survey.id)
@@ -98,13 +120,13 @@ export default function ResponseForm(props) {
 		if (surveyIndex !== -1) {
 			project.surveys[surveyIndex] = survey
 
-			project.setThis(project)
+			props.setProject(project)
 
 			projectHelper.unshift(project)
 			projectHelper.allToLs()
 
-			setResponse(clear)
-			_setIsOpenForm(false)
+			// setResponse(survey.getEmptyResponse())
+			closeForm()
 		}
 	}
 
@@ -128,10 +150,11 @@ export default function ResponseForm(props) {
 
 	return (
 		<FormDialog
+			id={props.id}
 			_width="md"
-			_title={response.id === null ? 'Tambah Kriteria' : 'Ubah ' + response.symbol}
-			_itemName='kriteria'
-			_dataName={response.symbol || responseTemp.symbol || 'kriteria'}
+			_title={response.id === null ? 'Tambah responden' : 'Ubah ' + response.symbol}
+			_itemName='responden'
+			_dataName={response.symbol || responseTemp.symbol || 'responden'}
 			_isOpenForm={_isOpenForm}
 			_isSubmitDisabled={_isSubmitDisabled}
 			_isOpenCancelDialog={_isOpenCancelDialog}
@@ -141,54 +164,77 @@ export default function ResponseForm(props) {
 			_handleCloseForm={_handleCloseForm}
 		>
 
-			<TextField
-				required
-				autoComplete="off"
-				autoFocus
-				margin="dense"
-				label="Simbol"
-				value={responseTemp.symbol}
-				fullWidth
-				onChange={(e) => {
-					responseTemp.symbol = e.target.value
-					setResponseTemp({ ...responseTemp })
-				}}
-			/>
+			<Container maxWidth="sm">
+				<Typography variant="h6" color="primary" style={{marginTop: '2em', marginBottom: '1em'}}>Data Responden:</Typography>
 
-			<TextField
-				required
-				autoComplete="off"
-				margin="dense"
-				label="Kelompok"
-				value={responseTemp.group}
-				fullWidth
-				onChange={(e) => {
-					responseTemp.group = e.target.value
-					setResponseTemp({ ...responseTemp })
-				}}
-			/>
+				
+				<TextField
+					required
+					autoComplete="off"
+					margin="dense"
+					label="Kategori"
+					value={responseTemp.group}
+					fullWidth
+					onChange={(e) => {
+						responseTemp.group = e.target.value
+						setResponseTemp({ ...responseTemp })
+					}}
+					style={{ paddingBottom: '2em' }}
+				/>
 
-			<TextField
-				required
-				autoComplete="off"
-				margin="dense"
-				label="Peran"
-				value={responseTemp.role}
-				fullWidth
-				onChange={(e) => {
-					responseTemp.role = e.target.value
-					setResponseTemp({ ...responseTemp })
-				}}
-			/>
+				<TextField
+					required
+					autoComplete="off"
+					autoFocus
+					margin="dense"
+					label="Simbol"
+					value={responseTemp.symbol}
+					fullWidth
+					onChange={(e) => {
+						responseTemp.symbol = e.target.value
+						setResponseTemp({ ...responseTemp })
+					}}
+				/>
 
-			<FormControl fullWidth style={{ marginTop: '8px' }}>
-				<InputLabel id="select-label">Usia</InputLabel>
+
+				<TextField
+					required
+					autoComplete="off"
+					margin="dense"
+					label="Peran"
+					value={responseTemp.role}
+					fullWidth
+					onChange={(e) => {
+						responseTemp.role = e.target.value
+						setResponseTemp({ ...responseTemp })
+					}}
+				/>
+
+				<TextField
+					required
+					autoComplete="off"
+					margin="dense"
+					label="Usia"
+					value={responseTemp.age}
+					fullWidth
+					onChange={(e) => {
+						responseTemp.age = e.target.value
+						setResponseTemp({ ...responseTemp })
+					}}
+					type="number"
+					InputProps={{
+						min: 0,
+						endAdornment: <InputAdornment position="start">Tahun</InputAdornment>,
+					}}
+				/>
+
+				{/* <FormControl fullWidth style={{ marginTop: '8px' }}>
+				<InputLabel id="select-label"></InputLabel>
 				<Select
 					labelId="select-label"
 					value={responseTemp.age}
 					onChange={(e) => {
-						responseTemp.age = e.target.value
-						setResponseTemp({ ...responseTemp })
+						
 					}}
 				>
 					{[
@@ -198,30 +244,50 @@ export default function ResponseForm(props) {
 						'42-49 Tahun'
 					].map((opt, i) => <MenuItem key={i} value={opt}>{opt}</MenuItem>)}
 				</Select>
-			</FormControl>
+			</FormControl> */}
 
-			<FormControl fullWidth style={{ marginTop: '8px' }}>
-				<InputLabel id="select-label">Pendidikan Terakhir</InputLabel>
-				<Select
-					labelId="select-label"
-					value={responseTemp.edu}
+
+
+				<FormControl fullWidth style={{ marginTop: '8px' }}>
+					<InputLabel id="select-label">Pendidikan Terakhir</InputLabel>
+					<Select
+						labelId="select-label"
+						value={responseTemp.edu}
+						fullWidth
+						onChange={(e) => {
+							responseTemp.edu = e.target.value
+							setResponseTemp({ ...responseTemp })
+						}}
+					>
+						{[
+							'SMP',
+							'SMA/Sederajat',
+							'Sarjana',
+							'Magister'
+						].map((opt, i) => <MenuItem key={i} value={opt}>{opt}</MenuItem>)}
+					</Select>
+				</FormControl>
+
+				<TextField
+					required
+					autoComplete="off"
+					margin="dense"
+					label="Pengetahuan Bangunan"
+					value={responseTemp.exp}
 					fullWidth
 					onChange={(e) => {
-						responseTemp.edu = e.target.value
+						responseTemp.exp = e.target.value
 						setResponseTemp({ ...responseTemp })
 					}}
-				>
-					{[
-						'SMP',
-						'SMA/Sederajat',
-						'Sarjana',
-						'Magister'
-					].map((opt, i) => <MenuItem key={i} value={opt}>{opt}</MenuItem>)}
-				</Select>
-			</FormControl>
+					type="number"
+					InputProps={{
+						min: 0,
+						endAdornment: <InputAdornment position="start">Tahun</InputAdornment>,
+					}}
+				/>
 
-			<FormControl fullWidth style={{ marginTop: '8px' }}>
-				<InputLabel id="select-label">Pengalaman</InputLabel>
+				{/* <FormControl fullWidth style={{ marginTop: '8px' }}>
+				<InputLabel id="select-label">Pengetahuan Bangunan</InputLabel>
 				<Select
 					labelId="select-label"
 					value={responseTemp.exp}
@@ -230,6 +296,7 @@ export default function ResponseForm(props) {
 						responseTemp.exp = e.target.value
 						setResponseTemp({ ...responseTemp })
 					}}
+
 				>
 					{[
 						'<2 Tahun',
@@ -238,7 +305,12 @@ export default function ResponseForm(props) {
 						'6-8 Tahun'
 					].map((opt, i) => <MenuItem key={i} value={opt}>{opt}</MenuItem>)}
 				</Select>
-			</FormControl>
+			</FormControl> */}
+
+			<Typography variant="h6" color="primary" style={{marginTop: '2em'}}>Isian Responden:</Typography>
+			</Container>
+
+
 
 
 			<Table size="small" style={{ marginTop: '24px' }}>
@@ -263,8 +335,8 @@ export default function ResponseForm(props) {
 							</TableCell>
 							<TableCell width="10%" style={{
 								color: row.isActive ? "inherit" : "#AAA"
-							}}>{row.criteriaDesc}</TableCell>
-							<TableCell>{row.criteriaSymbol}</TableCell>
+							}}>{survey.getCriteriaDescById(row.criteriaId)}</TableCell>
+							<TableCell>{survey.getCriteriaSymbolById(row.criteriaId)}</TableCell>
 							<TableCell >
 								{row.isActive &&
 									<FormControl component="fieldset">
@@ -315,3 +387,7 @@ export default function ResponseForm(props) {
 		</FormDialog >
 	)
 }
+
+
+
+export default ResponseForm

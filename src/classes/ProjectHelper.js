@@ -14,7 +14,7 @@ export default class ProjectHelper {
 	}
 
 	unshift(project) {
-		if (project.isNew()) {
+		if (!project.id) {
 			project.id = Date.now()
 		}
 		
@@ -35,12 +35,16 @@ export default class ProjectHelper {
 		return new Project(useState[0], useState[1])
 	}
 
-	getProjectByName = (name) => {
-		return this.all.find(project => project.name === name)
-	}
-
-	getProjectById = (id) => {
-		return this.all.find(project => project.id === id)
+	getProjectByName = (name) => this.all.find(project => project.name === name)
+	getProjectById = (id) => this.all.find(project => project.id === id)
+	
+	getEmptyProject = () => {
+		return {
+			id: '',
+			name: '',
+			desc: '',
+			date: ''
+		}
 	}
 
 	nameValidator(id, newName) {

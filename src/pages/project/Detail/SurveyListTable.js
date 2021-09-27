@@ -4,10 +4,13 @@ import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import LaunchIcon from '@material-ui/icons/Launch';
-import EditIcon from '@material-ui/icons/Edit';
 import { makeStyles } from '@material-ui/core';
+import PropTypes from 'prop-types';
+
+import TableRow from '@material-ui/core/TableRow';
+import FindInPageIcon from '@material-ui/icons/FindInPage';
+import EditIcon from '@material-ui/icons/Edit';
+import SettingsIcon from '@material-ui/icons/Settings';
 
 const useStyles = makeStyles((theme) => ({
 	tableRow: {
@@ -15,9 +18,15 @@ const useStyles = makeStyles((theme) => ({
 			backgroundColor: "rgb(0 0 255 / 8%)"
 		}
 	},
-	hover: { },
-	selected: { }
+	hover: {},
+	selected: {}
 }));
+
+
+
+SurveyListTable.propTypes = {
+	idSelected: PropTypes.string
+};
 
 export default function SurveyListTable(props) {
 	const classes = useStyles()
@@ -26,9 +35,10 @@ export default function SurveyListTable(props) {
 			<TableHead>
 				<TableRow>
 					<TableCell>TGL</TableCell>
-					<TableCell>Kesenjangan</TableCell>
-					<TableCell>Jumlah Responden</TableCell>
-					<TableCell>Jumlah Kriteria</TableCell>
+					<TableCell >Kriteria</TableCell>
+					<TableCell>Responden</TableCell>
+					<TableCell>Total Kesenjangan</TableCell>
+					<TableCell></TableCell>
 					<TableCell></TableCell>
 					<TableCell></TableCell>
 				</TableRow>
@@ -39,30 +49,62 @@ export default function SurveyListTable(props) {
 						className={classes.tableRow}
 						classes={{ selected: classes.selected }}
 						key={row.id}
-						selected={row.id === props.survey.id}
+						selected={row.id === props.idSelected}
 					>
 						<TableCell className={classes.tableRow}>{row.date}</TableCell>
-						<TableCell>{row.score && row.score.gap ? row.score.gap.toFixed(2) : '-'}</TableCell>
-						<TableCell>{row.responses.length}</TableCell>
-						<TableCell>{row.criterias.length}</TableCell>
 
-
-						<TableCell>
-							<Tooltip title="Ubah">
-								<IconButton size="small" color="primary" onClick={() => props._handleSurveyEdit(row)}>
-									<EditIcon />
-								</IconButton>
-							</Tooltip>
+						<TableCell >
+							{row.criterias ? row.criterias.length : '-'}
 						</TableCell>
 
-						<TableCell>
-							<Tooltip title="Detail">
-								<IconButton size="small" onClick={() => props.survey.setThis(row)} color="primary">
-									<LaunchIcon />
-								</IconButton>
-							</Tooltip>
+							<TableCell >
+								{row.responses ? row.responses.length : '-'}
+							</TableCell>
 
-						</TableCell>
+							<TableCell>{row.score && row.score.gap ? row.score.gap.toFixed(2) : '-'}</TableCell>
+
+							<TableCell>
+								<Tooltip title="Ubah Informasi">
+									<span>
+
+									<IconButton size="small" color="primary"
+										disabled={!(row.id === props.idSelected)}
+										onClick={() => props._handleSurveyEdit(row)}
+										>
+										<EditIcon />
+									</IconButton>
+										</span>
+								</Tooltip>
+							</TableCell>
+
+							<TableCell>
+								<Tooltip title="Pengaturan">
+									<span>
+									<IconButton size="small" color="primary"
+										disabled={!(row.id === props.idSelected)}
+
+										onClick={() => props.openSettingForm()}
+									>
+										<SettingsIcon />
+									</IconButton>
+									</span>
+
+								</Tooltip>
+							</TableCell>
+
+							<TableCell>
+								<Tooltip title="Lihat Hasil">
+									<IconButton size="small"
+										onClick={() => props.setSelected(row)}
+										color="primary">
+
+										<FindInPageIcon />
+									</IconButton>
+								</Tooltip>
+
+							</TableCell>
+
+
 					</TableRow>
 				))}
 			</TableBody>

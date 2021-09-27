@@ -9,65 +9,22 @@ import Tooltip from '@material-ui/core/Tooltip';
 import EditIcon from '@material-ui/icons/Edit';
 
 
-const getColor = (row) => {
-	let color = 'inherit'
-
-	if (row.score !== undefined) {
-		if (row.score.gap > 0) {
-			color = 'green'
-		} else if (row.score.gap === 0) {
-			color = 'inherit'
-		} else {
-			color = 'red'
-		}
-	}
-	return color
-}
-
-
-const getSatisfaction = (row) => {
-	let satis = '-'
-
-	if (row.score !== undefined) {
-		if (row.score.gap > 0) {
-			satis = 'Melebihi'
-		} else if (row.score.gap === 0) {
-			satis = 'Sesuai'
-		} else {
-			satis = 'Kurang'
-		}
-	}
-
-	return satis
-}
-
-
-export default function CriteriaTable(props) {
+export default function CriteriaTable2(props) {
 
 	return (
-		<Table size="small">
+		<Table size="small" id={props.id}>
 			<TableHead>
 				<TableRow>
-					<TableCell>Kriteria</TableCell>
 					<TableCell>Simbol</TableCell>
-					<TableCell>Kepuasan</TableCell>
-					<TableCell>Kesenjangan</TableCell>
+					<TableCell>Kriteria</TableCell>
 					<TableCell></TableCell>
 				</TableRow>
 			</TableHead>
 			<TableBody>
 				{props.rows.map((row) => (
 					<TableRow key={row.id}>
-						<TableCell>{row.desc}</TableCell>
 						<TableCell>{row.symbol}</TableCell>
-						<TableCell style={{ color: getColor(row) }}>
-							{getSatisfaction(row)
-							}</TableCell>
-						<TableCell style={{
-							color: getColor(row)
-						}}>
-							{row.score !== undefined ? row.score.gap.toFixed(2) : '-'}
-						</TableCell>
+						<TableCell>{row.desc}</TableCell>
 						<TableCell>
 							<Tooltip title="Ubah">
 								<IconButton size="small" onClick={() => props._handleCriteriaEdit(row)} color="primary">

@@ -1,49 +1,97 @@
 import nj from 'networkjs'
 import { multiply } from 'mathjs'
+import { sortAlphaNum, arrayObjGroup } from "./Helper";
+
 
 export default class Survey {
-	constructor(init, _setState) {
+	static emptyCriteria = {
+		id: null,
+		symbol: '',
+		desc: ''
+	}
+
+
+	constructor(init) {
 		this.id = init.id || null;
 		this.date = init.date || '';
 		this.criterias = init.criterias || [];
 		this.responses = init.responses || [];
-		this.score = init.score || { };
-
-		this._setState = _setState
+		this.score = init.score || {};
 	}
 
-	isNew() {
-		return this.id === null
+	criteriasSort = () => this.criterias.sort((a, b) => sortAlphaNum(a.symbol, b.symbol))
+	responsesSort = () => this.responses.sort((a, b) => sortAlphaNum(a.symbol, b.symbol))
+
+
+	// SETTER GETTER GOES HERE
+	//
+	//
+	//
+	//
+	isNew = () => this.id === null
+
+	getCriteriaById = id => this.criterias.find(cr => cr.id === id) || undefined
+	getCriteriaIndexById = id => this.criterias.findIndex(cr => cr.id === id)
+	getResponseIndexById = id => this.responses.findIndex(res => res.id === id)
+
+
+	getCriteriaSymbolById = id => {
+		const temp = this.getCriteriaById(id)
+
+		return temp ? temp.symbol : 'Not Found'
 	}
 
-	setThis(obj) {
-		this._setState(obj)
+	getCriteriaDescById = id => {
+		const temp = this.getCriteriaById(id)
+
+		return temp ? temp.desc : 'Not Found'
 	}
 
-	setDate(val) {
-		this.date = val;
-		this.setThis(this)
-	}
 
-	clearValue() {
-		this.setThis({
+	getEmptyCriteria = () => Survey.emptyCriteria
+
+	getEmptyResponse = () => {
+		const responseVal = []
+
+		this.criterias.map(criteria =>
+			responseVal.push({
+				isActive: false,
+				criteriaId: criteria.id,
+				expectation: 0,
+				reality: 0
+			})
+		)
+
+		return {
 			id: null,
-			date: '',
-			criterias: [],
-			responses: [],
-			score: { }
-
-		})
+			group: '',
+			role: '',
+			symbol: '',
+			age: '',
+			edu: '',
+			exp: '',
+			response: responseVal
+		}
 	}
 
+
+
+
+
+
+	// GRAPH DATA GOES HERE
+	//
+	//
+	//
+	//
 	toNetworkGraphData() {
-		let getColor = (row) => {
+		const getColor = (row) => {
 			let color = '#9e9e9e'
 
 			if (row.score !== undefined) {
-				if (row.score.gap < 0) {
+				if (row.score.gap > 0) {
 					color = '#ff1744'
-				} else if (row.score.gap >= 0) {
+				} else if (row.score.gap < 0) {
 					color = '#26a69a'
 				}
 			}
@@ -51,19 +99,14 @@ export default class Survey {
 			return color
 		}
 
-
-
 		let data = []
-
-
 
 		this.criterias.map(criteria => {
 			let lineIndex = 0;
-
-			let text = 'Gap: ' + (criteria.score !== undefined ? criteria.score.gap.toFixed(2) : '-') + '\n\n';
+			let text = ''
 
 			for (var i = 0; i < criteria.desc.length; i++) {
-				
+
 				if (lineIndex > 20 && criteria.desc.charAt(i) === ' ') {
 					text += '\n'
 					lineIndex = 0
@@ -75,13 +118,22 @@ export default class Survey {
 			}
 
 			return data.push({
+				id: criteria.id,
 				name: criteria.symbol,
-				text: text,
-				gap: criteria.score !== undefined ? criteria.score.gap.toFixed(2) : '0',
-				impact: criteria.score !== undefined ? (criteria.score.gap * criteria.weight * (criteria.score.gap < 0 ?  -1 : 1)) : '0',
+				text: [text, '\n\nSkor: [bold]' + (criteria.score ? (5 - criteria.score.gap).toFixed(2) : '-') + '[/]'],
+				gap: criteria.score ? criteria.score.gap : 0,
+				weight: criteria.weight,
+				impact: criteria.score && criteria.score.gap ? (criteria.score.gap * criteria.weight * (criteria.score.gap < 0 ? -1 : 1)) : 0,
 				color: getColor(criteria),
-				link: []
+				// link: [],
+				childrens: []
 			})
+		})
+
+		data.sort((a, b) => (a.gap * a.weight < b.gap * b.weight) ? 1 : ((b.weight * b.gap < a.weight * a.gap) ? -1 : 0))
+		data.map((d, i) => {
+			d.rank = i + 1
+			return d.text = '[bold]#' + d.rank + '[/]\n\n' + d.text
 		})
 
 		// #b2102f
@@ -99,40 +151,165 @@ export default class Survey {
 		// #9e9e9e
 
 		this.responses.map(response => {
-			// const link = response.response.map(res => res.isActive ? res.criteriaSymbol : null)
 
-			const crSymbols = response.response.filter(res => res.isActive).map(cr => cr.criteriaSymbol)
+			let lineIndex = 0;
+			let role = ''
 
-			data.filter(d => crSymbols.includes(d.name)).map(d => d.link.push(response.symbol))
+			for (var i = 0; i < response.role.length; i++) {
 
+				if (lineIndex > 20 && response.role.charAt(i) === ' ') {
+					role += '\n'
+					lineIndex = 0
+				} else {
+					role += response.role.charAt(i)
+				}
 
+				lineIndex++
+			}
 
-			return data.push({
-				// icon.href = "path/to/icon.svg";
-				name: response.symbol,
-				text: response.role,
-				// link: link,
-				color: "#3d5afe"
+			return response.response.filter(res => res.isActive).map(res => {
 
+				const text = 'Ekspektasi: [bold]' + res.expectation + '[/]\nRealita: [bold]' + res.reality + '[/]';
+
+				const temp = data.find(d => d.id === res.criteriaId);
+
+				return temp ? data.find(d => d.id === res.criteriaId).childrens.push({
+					text: role + '\n\n' + text,
+					name: response.symbol,
+					color: res.expectation === res.reality ? '#9e9e9e' : res.expectation > res.reality ? '#ff1744' : '#26a69a'
+				}) : 0
 			})
 		})
 
 		return data
 	}
 
+	getPieChartData(field) {
+		const catList = [
+			'Sangat Rendah',
+			'Rendah',
+			'Sedang',
+			'Baik',
+			'Sangat Baik',
+		]
 
-	getCriteriaIndex(id) {
-		return this.criterias.findIndex(criteria => criteria.id === id)
+		if (this.score[field]) {
+			return this.score[field].map((scoreVal, index) => {
+				return {
+					category: catList[index],
+					value: scoreVal
+				}
+			})
+		}
+
+		return []
 	}
 
-	getResponseIndex(id) {
-		return this.responses.findIndex(response => response.id === id)
+
+	getPieChartData2(field) {
+		// const catList = [
+		// 	'Sangat Rendah',
+		// 	'Rendah',
+		// 	'Sedang',
+		// 	'Baik',
+		// 	'Sangat Baik',
+		// ]
+
+		let addText = '';
+
+		if (field === 'age' || field === 'exp' ) {
+			addText = ' Tahun'
+		}
+
+		const groupped = arrayObjGroup(this.responses, field)
+
+		return Object.keys(groupped).map(groupName => {
+			
+				return {
+					category: groupName + addText,
+					value: groupped[groupName].length
+				}
+		})
 	}
 
+
+	getDetailTableData() {
+
+		const data = []
+
+		this.criterias.map((cr, i) => {
+			data[i] = JSON.parse(JSON.stringify(cr))
+
+			data[i].gap = cr.score && cr.score.gap ? cr.score.gap : 0
+			data[i].impact = cr.weight * data[i].gap
+			data[i].rate = 5 - data[i].gap
+			data[i].responses = []
+
+			return 0
+		})
+
+		data.sort((a, b) => (a.impact < b.impact) ? 1 : ((b.impact < a.impact) ? -1 : 0))
+		data.map((d, i) => d.rank = i + 1)
+
+		this.responses.map(response =>
+			response.response.filter(res => res.isActive)
+				.map(resCr => {
+
+					const criteria = data.find(cr => cr.id === resCr.criteriaId)
+
+					if (criteria) {
+						criteria.responses.push({
+							symbol: response.symbol,
+							expectation: resCr.expectation,
+							reality: resCr.reality
+						})
+					}
+
+					return 0
+				})
+		)
+
+		return data
+	}
+
+
+
+	getCriteriaGraphData() {
+
+		const data = this.criterias.map(cr => {
+			let lineIndex = 0;
+			let desc = ''
+
+			for (var i = 0; i < cr.desc.length; i++) {
+
+				if (lineIndex > 20 && cr.desc.charAt(i) === ' ') {
+					desc += '\n'
+					lineIndex = 0
+				} else {
+					desc += cr.desc.charAt(i)
+				}
+
+				lineIndex++
+			}
+
+			return {
+				symbol: cr.symbol,
+				desc: desc,
+				gap: 5 - (cr.score && cr.score.gap && cr.score.gap !== null && !Number.isNaN(cr.score.gap) ? cr.score.gap : 0),
+				// ...cr.score
+			}
+		})
+
+		return data
+	}
 
 
 
 	// RSB CORE GOES HERE
+	//
+	//
+	//
+	//
 	calcAndSetRSB() {
 		this.calcAndSetWeight()
 
@@ -143,7 +320,7 @@ export default class Survey {
 
 			crWeightMatrix.push(cr.weight)
 
-			results[cr.symbol] = {
+			results[cr.id] = {
 				gap: null,
 
 				expectationTotal: null,
@@ -159,8 +336,8 @@ export default class Survey {
 		// sum weight based on their likert val
 		this.responses.map(res1 =>
 			res1.response.filter(ans => ans.isActive).map(ans => {
-				results[ans.criteriaSymbol].expectationDetail[ans.expectation - 1] += res1.weight
-				results[ans.criteriaSymbol].realityDetail[ans.reality - 1] += res1.weight
+				results[ans.criteriaId].expectationDetail[ans.expectation - 1] += res1.weight
+				results[ans.criteriaId].realityDetail[ans.reality - 1] += res1.weight
 
 				return 0
 			})
@@ -183,12 +360,12 @@ export default class Survey {
 			results[crIndex].expectationTotal = multiply(results[crIndex].expectationDetail, [1, 2, 3, 4, 5]) // calc total score = detail * likert 5
 			results[crIndex].realityTotal = multiply(results[crIndex].realityDetail, [1, 2, 3, 4, 5]) // calc total score = detail * likert 5
 
-			results[crIndex].gap = results[crIndex].realityTotal - results[crIndex].expectationTotal
+			results[crIndex].gap = results[crIndex].expectationTotal - results[crIndex].realityTotal
 		}
 
 
 		// save cr score
-		this.criterias.map(cr => cr.score = results[cr.symbol])
+		this.criterias.map(cr => cr.score = results[cr.id])
 
 		// survey overall score calc
 		this.score = {
@@ -198,9 +375,7 @@ export default class Survey {
 
 		this.score.expectationTotal = multiply(this.score.expectationDetail, [1, 2, 3, 4, 5])
 		this.score.realityTotal = multiply(this.score.realityDetail, [1, 2, 3, 4, 5])
-		this.score.gap = this.score.realityTotal - this.score.expectationTotal
-
-		this.setThis(this)
+		this.score.gap = this.score.expectationTotal - this.score.realityTotal
 	}
 
 	calcEig() {
@@ -208,10 +383,10 @@ export default class Survey {
 		const eigenvector_centrality = nj.algorithms.centrality.eigenvector_centrality
 		let G = new Graph()
 
-		this.criterias.map(cr => G.add_node(cr.symbol))
+		this.criterias.map(cr => G.add_node(cr.id))
 		this.responses.map(res => {
-			G.add_node(res.symbol)
-			return res.response.map(cr => cr.isActive ? G.add_edge(res.symbol, cr.criteriaSymbol) : null)
+			G.add_node(res.id)
+			return res.response.map(cr => cr.isActive ? G.add_edge(res.id, cr.criteriaId) : null)
 		})
 
 		return eigenvector_centrality(G)
@@ -222,20 +397,16 @@ export default class Survey {
 		const eigs = this.calcEig()
 
 		let total = 0
-		this.criterias.map(cr => total += eigs[cr.symbol])
-		this.criterias.map(cr => cr.weight = eigs[cr.symbol] / total)
+		this.criterias.map(cr => total += eigs[cr.id])
+		this.criterias.map(cr => cr.weight = eigs[cr.id] / total)
 
 		total = 0
-		this.responses.map(res => total += eigs[res.symbol])
-		this.responses.map(res => res.weight = eigs[res.symbol] / total)
-
-		this.setThis(this)
+		this.responses.map(res => total += eigs[res.id])
+		this.responses.map(res => res.weight = eigs[res.id] / total)
 	}
 
 	clearWeights() {
 		this.criterias.map(cr => cr.weight = null)
 		this.responses.map(res => res.weight = null)
-
-		this.setThis(this)
 	}
 }
