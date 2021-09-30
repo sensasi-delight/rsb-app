@@ -1,5 +1,5 @@
 import TextField from "@material-ui/core/TextField";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import FormDialog from "../../../component/FormDialog";
 
 import PropTypes from 'prop-types';
@@ -13,12 +13,12 @@ export default function ProjectForm(props) {
 
 	const { projectHelper } = props
 
-	const [oldValues] = useState({...props.project})
+	const oldValues = useMemo(() => {return {...props.project}}, [props.project])
 	const [project, setProject] = useState({...props.project})
 
 	const { _isOpenForm, closeForm } = props;
 
-	const [_isSubmitDisabled, _setisSubmitDisabled] = useState(true);
+	const [_isSubmitDisabled, _setisSubmitDisabled] = useState(true)
 	const [_isOpenCancelDialog, _setIsOpenCancelDialog] = useState(false)
 
 	const [_isNameError, _setisNameError] = useState(false);
@@ -26,8 +26,9 @@ export default function ProjectForm(props) {
 
 	const _isInitialRender = useRef(true)
 
-	const isDirty = !project.id && (project.name !== '' || project.desc !== '')
-	const isChanged = project.id && (project.name !== oldValues.name || project.desc !== oldValues.desc)
+	const [isDirty, setIsDirty] = useState(false)
+	const [isChanged, setIsChanged] = useState(false)
+
 
 
 	useEffect(() => {
@@ -36,6 +37,12 @@ export default function ProjectForm(props) {
 			_isInitialRender.current = false
 		} else {
 			const timeOutId = setTimeout(() => {
+				const isDirty = !project.id && (project.name !== '' || project.desc !== '' || project.date !== '')
+				const isChanged = project.id && (project.name !== oldValues.name || project.desc !== oldValues.desc || project.date !== oldValues.date)
+
+				setIsDirty(isDirty)
+				setIsChanged(isChanged)
+
 				const { isValid, msg } = projectHelper.nameValidator(project.id, project.name)
 				setNameError(!isValid, msg, (!isDirty && !isChanged) || !isValid)
 			}, 500);
@@ -45,7 +52,10 @@ export default function ProjectForm(props) {
 			}
 		}
 
-	}, [project, projectHelper])
+	}, [project, projectHelper, oldValues])
+
+
+	
 
 
 	const _handleCloseForm = () => {
@@ -83,7 +93,9 @@ export default function ProjectForm(props) {
 			projectHelper.unshift(project)
 			projectHelper.allToLs()
 
-			props._setProject(project)
+			if (props._setProject) {
+				props._setProject(project)
+			}
 			
 			_isInitialRender.current = true
 			closeForm()

@@ -16,24 +16,13 @@ const chartx = (chartId) => {
 	const categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
 	categoryAxis.dataFields.category = "symbol";
 	categoryAxis.tooltipText = "{desc}"
-	// categoryAxis.renderer.grid.template.location= 0
-	// dateAxis.renderer.grid.template.location = 0;
 	categoryAxis.renderer.minGridDistance = 30;
-	// dateAxis.dateFormats.setKey("day", "dd");
-	// dateAxis.periodChangeDateFormats.setKey("day", "[bold]MMM");
-	// dateAxis.renderer.axisFills.template.fillOpacity = 1;
 
 
 	const valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
-	// valueAxis.renderer.grid.template.location = 0;
-	// valueAxis.renderer.inversed = true;
-	// valueAxis.min = -0.5;
-	// valueAxis.max = 0.5; 
-	// valueAxis.value = 0
 	
 	var range2 = valueAxis.axisRanges.create();
 	range2.value = 5;
-	// range2.endValue = -0.3;
 	range2.grid.stroke = am4core.color("green");
 	range2.grid.strokeWidth = 2;
 	range2.grid.strokeOpacity = 0.2;
@@ -41,13 +30,11 @@ const chartx = (chartId) => {
 	range2.label.text = "Ekspektasi";
 	range2.label.fill = range2.grid.stroke;
 	range2.label.align = "center";
-	// range2.label.verticalCenter = "bottom";
-	// range2.label.horizontalCenter = "center";
 
 
 	const GapSeries = chart.series.push(new am4charts.LineSeries());
 	GapSeries.dataFields.categoryX = "symbol";
-	GapSeries.dataFields.valueY = "gap";
+	GapSeries.dataFields.valueY = "score";
 	GapSeries.name = "Realita"
 	GapSeries.strokeWidth = 2;
 
@@ -55,11 +42,10 @@ const chartx = (chartId) => {
 	const bullet = GapSeries.bullets.push(new am4charts.CircleBullet());
 	bullet.circle.stroke = interfaceColors.getFor("background");
 	bullet.fill = GapSeries.stroke
-	bullet.tooltipText = '{bulletTooltip}';
-
+	bullet.tooltipText = '{bulletTooltip}'
 
 	bullet.adapter.add("fill", function (fill, target) {
-		return target.dataItem.valueY >= 5  ? am4core.color('green') : am4core.color('red');
+		return target.dataItem.valueY === 0 ?  am4core.color('gray') : target.dataItem.valueY >= 5  ? am4core.color('green') : am4core.color('red');
 	})
 
 	chart.legend = new am4charts.Legend();

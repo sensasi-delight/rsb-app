@@ -21,7 +21,7 @@ import PrintIcon from '@material-ui/icons/Print';
 //CLASSSES
 import Survey from '../../classes/Survey';
 import Project from '../../classes/Project';
-import { getEmptySurvey, print } from '../../classes/Helper';
+import { getColorByGap, getEmptySurvey, print } from '../../classes/Helper';
 
 import SurveyForm from '../../component/survey/SurveyForm';
 import FullscreenDialog from '../../component/FullscreenDialog';
@@ -316,7 +316,7 @@ export default function Detail(props) {
 
 									</Paper>
 									: <SurveyListTable rows={project.surveys} idSelected={selectedSurvey.id}
-										setSelected={(row) => setSelectedSurvey(new Survey(row))}
+										setSelected={(row) => {setSelectedTab(0); setSelectedSurvey(new Survey(row))}}
 
 										openSettingForm={() => {
 											setSelectedTab(0)
@@ -402,7 +402,7 @@ export default function Detail(props) {
 																			<TableCell>{row.rank}</TableCell>
 																			<TableCell>{row.symbol}</TableCell>
 																			<TableCell>{row.desc}</TableCell>
-																			<TableCell style={{ color: row.rate < 5 ? 'red' : 'green' }}>{row.rate.toFixed(2)}</TableCell>
+																			<TableCell style={{ color: getColorByGap(row.gap) }}>{row.gap === null ? '-' : row.rate.toFixed(2)}</TableCell>
 																		</TableRow>
 																	)}
 																	{detailTableDataRows.length > 10 &&
@@ -482,7 +482,7 @@ export default function Detail(props) {
 																	<Grid container alignItems="center">
 																		<Grid item xs={4}>
 																			<Typography align="center" variant="h3" component="p">
-																				{detailTableDataRows.filter(row => row.rate < 5).length}
+																				{detailTableDataRows.filter(row => row.gap > 0).length}
 																			</Typography>
 																		</Grid>
 																		<Grid item xs={8} style={{ paddingRight: "1em" }}>
@@ -498,7 +498,7 @@ export default function Detail(props) {
 																	<Grid container alignItems="center">
 																		<Grid item xs={4}>
 																			<Typography align="center" variant="h3" component="p">
-																				{detailTableDataRows.filter(row => row.rate === 5).length}
+																				{detailTableDataRows.filter(row => row.gap !== null && row.gap === 0).length}
 
 																			</Typography>
 																		</Grid>
@@ -515,7 +515,7 @@ export default function Detail(props) {
 																	<Grid container alignItems="center" >
 																		<Grid item xs={4}>
 																			<Typography align="center" variant="h3" component="p">
-																				{detailTableDataRows.filter(row => row.rate > 5).length}
+																				{detailTableDataRows.filter(row => row.gap < 0).length}
 
 																			</Typography>
 																		</Grid>
@@ -623,7 +623,7 @@ export default function Detail(props) {
 
 								fullS={true}
 								isFullS={uiToggle.surveySetting}
-								_onClickFullS={() => toggleUi('surveySetting')}
+								_onClickFullS={() => {setSelectedTab(0); toggleUi('surveySetting')}}
 							/>
 
 							<Tabs

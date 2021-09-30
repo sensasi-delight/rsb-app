@@ -52,6 +52,21 @@ export const print = (contentId, ifId) => {
 }
 
 
+export const getColorByGap = (gap) => {
+	let color = 'inherit'
+
+	if (gap !== '-') {
+		if (gap < 0) {
+			color = 'green'
+		} else if (gap > 0) {
+			color = 'red'
+		}
+	}
+
+	return color
+}
+
+
 const Helper = {
 	getEmptySurvey: getEmptySurvey,
 	sortAlphaNum: sortAlphaNum,

@@ -85,15 +85,14 @@ export default class Survey {
 	//
 	//
 	toNetworkGraphData() {
-		const getColor = (row) => {
+		
+		const getColor = (gap) => {
 			let color = '#9e9e9e'
 
-			if (row.score !== undefined) {
-				if (row.score.gap > 0) {
-					color = '#ff1744'
-				} else if (row.score.gap < 0) {
-					color = '#26a69a'
-				}
+			if (gap > 0) {
+				color = '#ff1744'
+			} else if (gap < 0) {
+				color = '#26a69a'
 			}
 
 			return color
@@ -104,8 +103,9 @@ export default class Survey {
 		this.criterias.map(criteria => {
 			let lineIndex = 0;
 			let text = ''
+			const score = criteria.score && criteria.score.expectationTotal ? 5 - criteria.score.gap : 0
 
-			for (var i = 0; i < criteria.desc.length; i++) {
+			for (let i = 0; i < criteria.desc.length; i++) {
 
 				if (lineIndex > 20 && criteria.desc.charAt(i) === ' ') {
 					text += '\n'
@@ -120,17 +120,20 @@ export default class Survey {
 			return data.push({
 				id: criteria.id,
 				name: criteria.symbol,
-				text: [text, '\n\nSkor: [bold]' + (criteria.score ? (5 - criteria.score.gap).toFixed(2) : '-') + '[/]'],
-				gap: criteria.score ? criteria.score.gap : 0,
+				text: text + '\n\nSkor: [bold]' + (score ? score.toFixed(2) : '-') + '[/]',
+				impact: criteria.weight * criteria.score.gap * (criteria.score.gap < 0 ? -1 : 1),
+				impactPure: criteria.weight * criteria.score.gap,
+				color: getColor(criteria.score.gap),
+				childrens: [],
+
+				//for ranking
+				gap: criteria.score.gap,
 				weight: criteria.weight,
-				impact: criteria.score && criteria.score.gap ? (criteria.score.gap * criteria.weight * (criteria.score.gap < 0 ? -1 : 1)) : 0,
-				color: getColor(criteria),
-				// link: [],
-				childrens: []
 			})
 		})
 
-		data.sort((a, b) => (a.gap * a.weight < b.gap * b.weight) ? 1 : ((b.weight * b.gap < a.weight * a.gap) ? -1 : 0))
+
+		data.sort((a, b) => (a.impactPure < b.impactPure) ? 1 : ((b.impactPure < a.impactPure) ? -1 : 0))
 		data.map((d, i) => {
 			d.rank = i + 1
 			return d.text = '[bold]#' + d.rank + '[/]\n\n' + d.text
@@ -217,18 +220,18 @@ export default class Survey {
 
 		let addText = '';
 
-		if (field === 'age' || field === 'exp' ) {
+		if (field === 'age' || field === 'exp') {
 			addText = ' Tahun'
 		}
 
 		const groupped = arrayObjGroup(this.responses, field)
 
 		return Object.keys(groupped).map(groupName => {
-			
-				return {
-					category: groupName + addText,
-					value: groupped[groupName].length
-				}
+
+			return {
+				category: groupName + addText,
+				value: groupped[groupName].length
+			}
 		})
 	}
 
@@ -240,13 +243,14 @@ export default class Survey {
 		this.criterias.map((cr, i) => {
 			data[i] = JSON.parse(JSON.stringify(cr))
 
-			data[i].gap = cr.score && cr.score.gap ? cr.score.gap : 0
+			data[i].gap = cr.score && cr.score.expectationTotal ? cr.score.gap : null
 			data[i].impact = cr.weight * data[i].gap
-			data[i].rate = 5 - data[i].gap
+			data[i].rate = cr.score && cr.score.expectationTotal ? 5 - data[i].gap : null
 			data[i].responses = []
 
 			return 0
 		})
+
 
 		data.sort((a, b) => (a.impact < b.impact) ? 1 : ((b.impact < a.impact) ? -1 : 0))
 		data.map((d, i) => d.rank = i + 1)
@@ -292,10 +296,13 @@ export default class Survey {
 				lineIndex++
 			}
 
+			const score = (cr.score && cr.score.expectationTotal ? 5 - cr.score.gap : 0)
+
 			return {
 				symbol: cr.symbol,
 				desc: desc,
-				gap: 5 - (cr.score && cr.score.gap && cr.score.gap !== null && !Number.isNaN(cr.score.gap) ? cr.score.gap : 0),
+				score: score,
+				bulletTooltip: score.toFixed(2),
 				// ...cr.score
 			}
 		})
@@ -318,7 +325,7 @@ export default class Survey {
 		let crWeightMatrix = []
 		this.criterias.map(cr => {
 
-			crWeightMatrix.push(cr.weight)
+			crWeightMatrix.push(cr.weight || 0)
 
 			results[cr.id] = {
 				gap: null,
@@ -351,8 +358,8 @@ export default class Survey {
 			const totalExp = results[crIndex].expectationDetail.reduce((a, b) => a + b, 0)
 			const totalRea = results[crIndex].realityDetail.reduce((a, b) => a + b, 0)
 
-			results[crIndex].expectationDetail.map((v, i) => results[crIndex].expectationDetail[i] = v / totalExp)
-			results[crIndex].realityDetail.map((v, i) => results[crIndex].realityDetail[i] = v / totalRea)
+			results[crIndex].expectationDetail.map((v, i) => results[crIndex].expectationDetail[i] = v === null ? 0 : v / totalExp)
+			results[crIndex].realityDetail.map((v, i) => results[crIndex].realityDetail[i] = v === null ? 0 : v / totalRea)
 
 			crExpMatrix.push(results[crIndex].expectationDetail)
 			crReaMatrix.push(results[crIndex].realityDetail)
@@ -366,6 +373,7 @@ export default class Survey {
 
 		// save cr score
 		this.criterias.map(cr => cr.score = results[cr.id])
+
 
 		// survey overall score calc
 		this.score = {

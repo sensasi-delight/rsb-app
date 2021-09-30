@@ -12,22 +12,8 @@ import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
 import { TableContainer, TableSortLabel } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { sortAlphaNum } from '../../../classes/Helper';
+import { sortAlphaNum, getColorByGap } from '../../../classes/Helper';
 
-
-const getColor = (gap) => {
-	let color = 'inherit'
-
-	if (gap !== '-') {
-		if (gap < 0) {
-			color = 'green'
-		} else if (gap > 0) {
-			color = 'red'
-		}
-	}
-
-	return color
-}
 
 
 const getColorRes = (exp, rea) => {
@@ -218,7 +204,7 @@ export default function DetailTable({ rows, id }) {
 						.map((row) => {
 							return (
 								<TableRow key={row.id} tabIndex={-1}>
-									<TableCell align="center" padding="normal" style={{ color: getColor(row.gap) }}>
+									<TableCell align="center" padding="normal" style={{ color: getColorByGap(row.gap) }}>
 										{row.rank}
 									</TableCell>
 									<TableCell align="center" >{row.symbol}</TableCell>
@@ -251,11 +237,11 @@ export default function DetailTable({ rows, id }) {
 									<TableCell align="left" padding="normal">
 										{row.weight ? (row.weight *100).toFixed(2) : row.weight} %
 									</TableCell>
-									<TableCell align="left" padding="normal" style={{ color: getColor(row.gap) }}>
-										{ row.rate.toFixed(2) }
+									<TableCell align="left" padding="normal" style={{ color: getColorByGap(row.gap) }}>
+										{ row.gap === null ? '-' : row.rate.toFixed(2) }
 									</TableCell>
 									
-									<TableCell align="left" padding="none" style={{ color: getColor(row.gap) }}>{getSatisfaction(row.gap)}</TableCell>
+									<TableCell align="left" padding="none" style={{ color: getColorByGap(row.gap) }}>{getSatisfaction(row.gap)}</TableCell>
 								</TableRow>
 							);
 						})}

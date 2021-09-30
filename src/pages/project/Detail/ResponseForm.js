@@ -22,8 +22,7 @@ import { Container, InputAdornment, Typography } from "@material-ui/core";
 
 
 const ResponseForm = props => {
-
-	const { projectHelper, project, survey, response } = props
+	const { projectHelper, project, response, survey } = props
 
 	const [responseTemp, setResponseTemp] = useState({ ...response })
 
@@ -101,7 +100,7 @@ const ResponseForm = props => {
 	const _handleSubmit = () => {
 
 		if (responseTemp.id === null) {
-			responseTemp.id = new Date()
+			responseTemp.id = Date.now()
 			survey.responses.push(responseTemp)
 		} else {
 			const resIndex = survey.getResponseIndexById(responseTemp.id)
@@ -111,8 +110,8 @@ const ResponseForm = props => {
 			}
 		}
 
-		survey.responsesSort()
 
+		survey.responsesSort()
 		survey.calcAndSetRSB()
 
 		const surveyIndex = project.getSurveyIndex(survey.id)
@@ -120,12 +119,10 @@ const ResponseForm = props => {
 		if (surveyIndex !== -1) {
 			project.surveys[surveyIndex] = survey
 
-			props.setProject(project)
-
 			projectHelper.unshift(project)
 			projectHelper.allToLs()
-
-			// setResponse(survey.getEmptyResponse())
+			
+			props.setProject(project)
 			closeForm()
 		}
 	}
@@ -169,6 +166,7 @@ const ResponseForm = props => {
 
 				
 				<TextField
+					autoFocus
 					required
 					autoComplete="off"
 					margin="dense"
@@ -185,7 +183,6 @@ const ResponseForm = props => {
 				<TextField
 					required
 					autoComplete="off"
-					autoFocus
 					margin="dense"
 					label="Simbol"
 					value={responseTemp.symbol}

@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
 
 
 SurveyListTable.propTypes = {
-	idSelected: PropTypes.string
+	rows: PropTypes.array.isRequired
 };
 
 export default function SurveyListTable(props) {
@@ -37,7 +37,7 @@ export default function SurveyListTable(props) {
 					<TableCell>TGL</TableCell>
 					<TableCell >Kriteria</TableCell>
 					<TableCell>Responden</TableCell>
-					<TableCell>Total Kesenjangan</TableCell>
+					<TableCell>Skor</TableCell>
 					<TableCell></TableCell>
 					<TableCell></TableCell>
 					<TableCell></TableCell>
@@ -61,7 +61,7 @@ export default function SurveyListTable(props) {
 								{row.responses ? row.responses.length : '-'}
 							</TableCell>
 
-							<TableCell>{row.score && row.score.gap ? row.score.gap.toFixed(2) : '-'}</TableCell>
+							<TableCell>{row.score && row.score.expectationTotal ? (5 - row.score.gap).toFixed(2) : '-'}</TableCell>
 
 							<TableCell>
 								<Tooltip title="Ubah Informasi">

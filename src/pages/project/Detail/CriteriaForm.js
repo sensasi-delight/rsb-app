@@ -56,7 +56,7 @@ export default function CriteriaForm(props) {
 	const _handleSubmit = () => {
 
         if (criteriaTemp.id === null) {
-            criteriaTemp.id = new Date()
+            criteriaTemp.id = Date.now()
             survey.criterias.push(criteriaTemp)
         } else {
 			const crIndex = survey.getCriteriaIndexById(criteriaTemp.id)

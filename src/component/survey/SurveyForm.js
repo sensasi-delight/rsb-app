@@ -69,7 +69,7 @@ export default function SurveyForm(props) {
 	const _handleSubmit = () => {
 
 		if(!survey.id) {
-			survey.id = new Date()
+			survey.id = Date.now()
 			project.surveys.unshift(survey)
 		} else {
 			const i = project.surveys.findIndex(s => s.id === survey.id)
