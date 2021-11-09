@@ -39,7 +39,7 @@ import TitleGrid from '../../component/TitleGrid';
 import CriteriaTable2 from './Detail/CriteriaTable2';
 import TabPanel from './Detail/TabPanel';
 import RsbGraph2 from './Detail/RsbGraph2';
-import { Button, Table, TableBody, TableCell, TableHead, TableRow } from '@material-ui/core';
+import { Button, FormControl, InputLabel, MenuItem, Select, Table, TableBody, TableCell, TableHead, TableRow } from '@material-ui/core';
 
 
 
@@ -98,6 +98,13 @@ const useStyles = makeStyles((theme) => ({
 		paddingBottom: theme.spacing(3),
 		backgroundColor: "rgb(0 0 255 / 8%)"
 	},
+
+	shortcutCard: {
+		marginTop: theme.spacing(3),
+		padding: theme.spacing(4),
+		paddingBottom: theme.spacing(3),
+		backgroundColor: "rgb(255 255 0 / 8%)"
+	},
 	drawerPaperClose: {
 		overflowX: 'hidden',
 		transition: theme.transitions.create('width', {
@@ -131,7 +138,30 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-
+const varTemplates = [
+	"Bangunan memberikan rasa aman secara fisik (Tidak terjadi kekerasan, Perbuatan Asusila, Pencurian, dll).",
+	"Bangunan memberikan rasa selamat secara fisik (Tidak membahayakan keselamatan dari elemen bangunan, memberikan informasi penanganan bahaya, Penyediaan alat penanganan bahaya).",
+	"Bangunan mengutamakan aspek kesehatan dari pencemaran/permasalahan lingkungan (Cahaya, suhu, Suara, Udara, Air, Getaran dan Kebersihan).",
+	"Bangunan memberikan rasa nyaman secara psikis terhadap Kondisi Cahaya, Suhu, Suara, Udara, Air, Getaran dan Kebersihan.",
+	"Masyarakat/warga lokal memiliki kesempatan bekerja pada bangunan.",
+	"Bangunan memberikan manfaat ekonomi kepada masyarakat sekitar seperti merangsang pertumbuhan usaha.",
+	"Pemangku kepentingan dilibatkan dalam proses pengambilan keputusan.",
+	"Konflik pemangku kepentingan dapat terselesaikan.",
+	"Kemudahan berkomunikasi dan pertukaran informasi terhadap pemangku kepentingan.",
+	"Masyarakat sekitar tidak merasa terganggu dengan adanya gedung.",
+	"Bangunan tidak merusak nilai budaya masyarakat/warga sekitar.",
+	"Tersedia tempat parkir kendaraan pada bangunan.",
+	"Tertatanya alur keluar masuk kendaraan pada bangunan.",
+	"Bangunan menyediakan kemudahan akses terhadap fasilitas publik (transportasi umum, pendidikan, rekreasi, tempat kerja, pusat perbelanjaan, olahraga, dll).",
+	"Bangunan menyediakan kemudahan akses terhadap fasilitas darurat (Kesehatan, Kepolisian, Pemadam kebakaran).",
+	"Bangunan menyediakan kemudahan akses untuk keterbatasan fisik (disabilitas).",
+	"Bangunan memberikan hubungan emosional antara pengguna dan lingkungan sehingga memunculkan kesan yang baik (Sense of Place).",
+	"Bangunan bisa menjadi tempat melakukan interaksi sosial secara individu maupun kelompok.",
+	"Bangunan memperhatikan aspek estetika serta kesesuaian fungsinya.",
+	"Terdapat ruang terbuka komunal pada bangunan.",
+	"Terdapat ruang terbuka pribadi pada bangunan.",
+	"Terdapat ruang privasi visual pada bangunan."
+]
 
 let varResponse = undefined
 let varCriteria = undefined
@@ -174,6 +204,9 @@ export default function Detail(props) {
 	const [pieChart2, setPieChart2] = useState(undefined)
 	const [pieChart3, setPieChart3] = useState(undefined)
 	const [pieChart4, setPieChart4] = useState(undefined)
+
+	const [selectedVarTemplate, setSelectedVarTemplate] = useState('')
+
 
 
 	const [selectedSurvey, setSelectedSurvey] = useState(new Survey({}))
@@ -316,7 +349,7 @@ export default function Detail(props) {
 
 									</Paper>
 									: <SurveyListTable rows={project.surveys} idSelected={selectedSurvey.id}
-										setSelected={(row) => {setSelectedTab(0); setSelectedSurvey(new Survey(row))}}
+										setSelected={(row) => { setSelectedTab(0); setSelectedSurvey(new Survey(row)) }}
 
 										openSettingForm={() => {
 											setSelectedTab(0)
@@ -623,7 +656,7 @@ export default function Detail(props) {
 
 								fullS={true}
 								isFullS={uiToggle.surveySetting}
-								_onClickFullS={() => {setSelectedTab(0); toggleUi('surveySetting')}}
+								_onClickFullS={() => { setSelectedTab(0); toggleUi('surveySetting') }}
 							/>
 
 							<Tabs
@@ -678,6 +711,59 @@ export default function Detail(props) {
 										<CriteriaTable2 id="criteriaTable" rows={selectedSurvey.criterias} _handleCriteriaEdit={_handleCriteriaEdit} />
 
 								}
+
+								<Paper className={classes.shortcutCard} elevation={4}>
+									<Typography variant="body1">Silahkan pilih variabel pada contoh yang tersedia untuk menambahkan variabel secara cepat</Typography>
+									<Grid container alignItems='flex-end' style={{ marginTop: "1em" }}>
+										<Grid item xs={10}>
+											<FormControl className={classes.formControl}
+												style={{ width: "100%" }}
+											>
+												<InputLabel id="variabel-select-label">Variabel</InputLabel>
+												<Select
+													labelId="variabel-select-label"
+													id="variabel-select"
+													value={selectedVarTemplate}
+													onChange={(event) => {
+														setSelectedVarTemplate(event.target.value)
+													}}
+												>
+													{varTemplates.map((varx, i) =>
+														(<MenuItem key={i} value={varx}>{varx}</MenuItem>)
+													)}
+												</Select>
+											</FormControl>
+										</Grid>
+										<Grid item xs={2}>
+											<Button variant="contained" color="primary"
+											onClick={() => {
+												selectedSurvey.criterias.push({
+													id: Date.now(),
+													symbol: 'V' + (selectedSurvey.criterias.length + 1),
+													desc: selectedVarTemplate
+												})
+										
+												selectedSurvey.criteriasSort()
+										
+												const surveyIndex = project.getSurveyIndex(selectedSurvey.id)
+										
+												if (surveyIndex !== -1) {
+													project.surveys[surveyIndex] = selectedSurvey
+										
+													setProject(project)
+										
+													props.projectHelper.unshift(project)
+													props.projectHelper.allToLs()
+										
+													// closeForm()
+												}
+											}}
+											>Tambahkan</Button>
+
+										</Grid>
+
+									</Grid>
+								</Paper>
 							</TabPanel>
 
 

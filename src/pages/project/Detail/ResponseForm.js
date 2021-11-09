@@ -121,7 +121,7 @@ const ResponseForm = props => {
 
 			projectHelper.unshift(project)
 			projectHelper.allToLs()
-			
+
 			props.setProject(project)
 			closeForm()
 		}
@@ -162,10 +162,10 @@ const ResponseForm = props => {
 		>
 
 			<Container maxWidth="sm">
-				<Typography variant="h6" color="primary" style={{marginTop: '2em', marginBottom: '1em'}}>Data Responden:</Typography>
+				<Typography variant="h6" color="primary" style={{ marginTop: '2em', marginBottom: '1em' }}>Data Responden:</Typography>
 
-				
-				<TextField
+
+				{/* <TextField
 					autoFocus
 					required
 					autoComplete="off"
@@ -178,7 +178,27 @@ const ResponseForm = props => {
 						setResponseTemp({ ...responseTemp })
 					}}
 					style={{ paddingBottom: '2em' }}
-				/>
+				/> */}
+
+				<FormControl fullWidth style={{ marginTop: '8px' }}>
+					<InputLabel id="select-label-2">Kategori</InputLabel>
+					<Select
+						labelId="select-label=2"
+						value={responseTemp.group}
+						fullWidth
+						onChange={(e) => {
+							responseTemp.group = e.target.value
+							setResponseTemp({ ...responseTemp })
+						}}
+					>
+						{[
+							'Industri',
+							'Pemilik',
+							'Pengguna Bangunan',
+							'Masyarakat Sekitar'
+						].map((opt, i) => <MenuItem key={i} value={opt}>{opt}</MenuItem>)}
+					</Select>
+				</FormControl>
 
 				<TextField
 					required
@@ -304,13 +324,51 @@ const ResponseForm = props => {
 				</Select>
 			</FormControl> */}
 
-			<Typography variant="h6" color="primary" style={{marginTop: '2em'}}>Isian Responden:</Typography>
+				<Typography variant="h6" color="primary" style={{ marginTop: '2em' }}>Isian Responden:</Typography>
+				<Typography>Skala pengukuran mengenai besarnya tingkat harapan dan realita yang terjadi di lapangan adalah sebagai berikut:</Typography>
+
+				<Table size="small" style={{ marginTop: '24px' }}>
+				<TableHead>
+					<TableRow>
+						<TableCell>Skala</TableCell>
+						<TableCell>Ekspektasi/Harapan</TableCell>
+						<TableCell>Realita yang Dirasakan</TableCell>
+					</TableRow>
+				</TableHead>
+				<TableBody>
+					<TableRow>
+						<TableCell>1</TableCell>
+						<TableCell>Sangat Rendah</TableCell>
+						<TableCell>Sangat Buruk</TableCell>
+					</TableRow>
+					<TableRow>
+						<TableCell>2</TableCell>
+						<TableCell>Rendah</TableCell>
+						<TableCell>Buruk</TableCell>
+					</TableRow>
+					<TableRow>
+						<TableCell>3</TableCell>
+						<TableCell>Sedang</TableCell>
+						<TableCell>Sedang</TableCell>
+					</TableRow>
+					<TableRow>
+						<TableCell>4</TableCell>
+						<TableCell>Tinggi</TableCell>
+						<TableCell>Baik</TableCell>
+					</TableRow>
+					<TableRow>
+						<TableCell>5</TableCell>
+						<TableCell>Sangat Tinggi</TableCell>
+						<TableCell>Sangat Baik</TableCell>
+					</TableRow>
+				</TableBody>
+			</Table>
+
 			</Container>
 
 
 
-
-			<Table size="small" style={{ marginTop: '24px' }}>
+			<Table style={{ marginTop: '24px' }}>
 				<TableHead>
 					<TableRow>
 						<TableCell>Kepentingan</TableCell>
@@ -323,7 +381,7 @@ const ResponseForm = props => {
 				<TableBody>
 					{responseTemp.response.map((row, i) => (
 						<TableRow key={row.criteriaId}>
-							<TableCell>
+							<TableCell width="5%">
 								<Checkbox
 									checked={row.isActive}
 									color="primary"
@@ -341,20 +399,33 @@ const ResponseForm = props => {
 											defaultValue="0"
 											value={row.expectation}
 										>
-											{['1', '2', '3', '4', '5'].map(val => <FormControlLabel
+											{/* <FormControlLabel
 												style={{ margin: '0px' }}
-												key={val}
-												value={val}
-												control={<Radio color="primary" size="small"
-													onClick={() => _handleExpectClick(i, val)}
-												/>}
-												label={val}
+												label="Rendah"
 												labelPlacement="top"
-											/>)}
+											/> */}
+											{['1', '2', '3', '4', '5'].map(val =>
+												<FormControlLabel
+													style={{ margin: '0px' }}
+													key={val}
+													value={val}
+													control={<Radio color="primary" size="small"
+														onClick={() => _handleExpectClick(i, val)}
+													/>}
+													label={val}
+													labelPlacement="top"
+												/>)}
 										</RadioGroup>
+										{/* <FormControlLabel
+											style={{ margin: '0px' }}
+											label="Tinggi"
+											labelPlacement="top"
+										/> */}
 									</FormControl>
 								}
 							</TableCell>
+							<TableCell >
+							</TableCell >
 							<TableCell>
 								{row.isActive &&
 									<FormControl component="fieldset">
@@ -373,6 +444,7 @@ const ResponseForm = props => {
 												labelPlacement="top"
 											/>)}
 										</RadioGroup>
+
 									</FormControl>
 								}
 							</TableCell>
