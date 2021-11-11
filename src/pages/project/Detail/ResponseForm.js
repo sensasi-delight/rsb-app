@@ -214,7 +214,7 @@ const ResponseForm = props => {
 				/>
 
 
-				<TextField
+				{/* <TextField
 					required
 					autoComplete="off"
 					margin="dense"
@@ -225,7 +225,34 @@ const ResponseForm = props => {
 						responseTemp.role = e.target.value
 						setResponseTemp({ ...responseTemp })
 					}}
-				/>
+				/> */}
+
+				<FormControl fullWidth style={{ marginTop: '8px' }}>
+					<InputLabel id="select-label-3">Peran</InputLabel>
+					<Select
+						labelId="select-label=3"
+						value={responseTemp.role}
+						fullWidth
+						onChange={(e) => {
+							responseTemp.role = e.target.value
+							setResponseTemp({ ...responseTemp })
+						}}
+					>
+						{[
+							'Owner I',
+							'Owner II',
+							'Manajemen Bangunan',
+							'Keamanan',
+							'Kebersihan',
+							'Penghuni',
+							'Tamu',
+							'Pengguna Kantor',
+							'Masyarakat sekitar yang tinggal disekitar',
+							'Masyarakat sekitar yang memiliki usaha disekitar',
+							'Pengguna Jalan',
+						].map((opt, i) => <MenuItem key={i} value={opt}>{opt}</MenuItem>)}
+					</Select>
+				</FormControl>
 
 				<TextField
 					required
@@ -280,7 +307,8 @@ const ResponseForm = props => {
 							'SMP',
 							'SMA/Sederajat',
 							'Sarjana',
-							'Magister'
+							'Magister',
+							'Doktor'
 						].map((opt, i) => <MenuItem key={i} value={opt}>{opt}</MenuItem>)}
 					</Select>
 				</FormControl>
@@ -328,41 +356,41 @@ const ResponseForm = props => {
 				<Typography>Skala pengukuran mengenai besarnya tingkat harapan dan realita yang terjadi di lapangan adalah sebagai berikut:</Typography>
 
 				<Table size="small" style={{ marginTop: '24px' }}>
-				<TableHead>
-					<TableRow>
-						<TableCell>Skala</TableCell>
-						<TableCell>Ekspektasi/Harapan</TableCell>
-						<TableCell>Realita yang Dirasakan</TableCell>
-					</TableRow>
-				</TableHead>
-				<TableBody>
-					<TableRow>
-						<TableCell>1</TableCell>
-						<TableCell>Sangat Rendah</TableCell>
-						<TableCell>Sangat Buruk</TableCell>
-					</TableRow>
-					<TableRow>
-						<TableCell>2</TableCell>
-						<TableCell>Rendah</TableCell>
-						<TableCell>Buruk</TableCell>
-					</TableRow>
-					<TableRow>
-						<TableCell>3</TableCell>
-						<TableCell>Sedang</TableCell>
-						<TableCell>Sedang</TableCell>
-					</TableRow>
-					<TableRow>
-						<TableCell>4</TableCell>
-						<TableCell>Tinggi</TableCell>
-						<TableCell>Baik</TableCell>
-					</TableRow>
-					<TableRow>
-						<TableCell>5</TableCell>
-						<TableCell>Sangat Tinggi</TableCell>
-						<TableCell>Sangat Baik</TableCell>
-					</TableRow>
-				</TableBody>
-			</Table>
+					<TableHead>
+						<TableRow>
+							<TableCell>Skala</TableCell>
+							<TableCell>Ekspektasi/Harapan</TableCell>
+							<TableCell>Realita yang Dirasakan</TableCell>
+						</TableRow>
+					</TableHead>
+					<TableBody>
+						<TableRow>
+							<TableCell>1</TableCell>
+							<TableCell>Sangat Rendah</TableCell>
+							<TableCell>Sangat Buruk</TableCell>
+						</TableRow>
+						<TableRow>
+							<TableCell>2</TableCell>
+							<TableCell>Rendah</TableCell>
+							<TableCell>Buruk</TableCell>
+						</TableRow>
+						<TableRow>
+							<TableCell>3</TableCell>
+							<TableCell>Sedang</TableCell>
+							<TableCell>Sedang</TableCell>
+						</TableRow>
+						<TableRow>
+							<TableCell>4</TableCell>
+							<TableCell>Tinggi</TableCell>
+							<TableCell>Baik</TableCell>
+						</TableRow>
+						<TableRow>
+							<TableCell>5</TableCell>
+							<TableCell>Sangat Tinggi</TableCell>
+							<TableCell>Sangat Baik</TableCell>
+						</TableRow>
+					</TableBody>
+				</Table>
 
 			</Container>
 
@@ -424,8 +452,6 @@ const ResponseForm = props => {
 									</FormControl>
 								}
 							</TableCell>
-							<TableCell >
-							</TableCell >
 							<TableCell>
 								{row.isActive &&
 									<FormControl component="fieldset">

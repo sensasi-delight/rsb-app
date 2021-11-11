@@ -20,6 +20,8 @@ const chartx = (chartId) => {
 
 
 	const valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+	valueAxis.max = 9
+	valueAxis.min = 0
 	
 	var range2 = valueAxis.axisRanges.create();
 	range2.value = 5;

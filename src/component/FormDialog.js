@@ -34,11 +34,12 @@ const useStyles = makeStyles((theme) => ({
 	},
 
 	content: {
-		paddingTop: theme.spacing(4)
+		paddingTop: theme.spacing(4),
+		paddingBottom: theme.spacing(10)
 	},
 
 	btnBox: {
-		marginTop: theme.spacing(2)
+		marginTop: theme.spacing(4)
 	}
 }));
 
@@ -67,7 +68,7 @@ export default function FormDialog(props) {
 						</IconButton>
 					</Toolbar>
 				</AppBar>
-				<DialogContent  className={classes.content}>
+				<DialogContent className={classes.content}>
 					<Container maxWidth={props._width || "sm"}>
 						<DialogContentText>
 							Silahkan masukkan data {_itemName} pada kolom yang telah sediakan.

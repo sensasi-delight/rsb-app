@@ -38,7 +38,8 @@ const chartx = (chartId) => {
 
 	// Create series
 	const valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
-	valueAxis.max = 7.5
+	valueAxis.max = 9
+	valueAxis.min = 0
 	valueAxis.title.text= 'Skor'
 
 

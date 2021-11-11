@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types';
 
 import FullscreenIcon from '@material-ui/icons/Fullscreen';
-import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
+// import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
+import CloseIcon from '@material-ui/icons/Close';
 
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
@@ -37,13 +38,13 @@ export default function TitleGrid(props) {
 				}
 
 				{props.fullS &&
-					<Tooltip title={props.isFullS ? "Tutup Layar Penuh" : "Layar Penuh"}>
+					<Tooltip title={props.isFullS ? "Tutup Halaman" : "Layar Penuh"}>
 						<IconButton
 							style={{ marginBottom: 7 }}
 							color='primary'
 							onClick={props._onClickFullS}
 						>
-							{props.isFullS ? <FullscreenExitIcon /> : <FullscreenIcon />}
+							{props.isFullS ? <CloseIcon /> : <FullscreenIcon />}
 						</IconButton>
 					</Tooltip>
 				}
